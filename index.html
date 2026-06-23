@@ -1,0 +1,1653 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1A1208">
+<meta name="description" content="Pedidos online de delivery">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mi Restaurante">
+<link rel="manifest" href="manifest.json">
+<title>Mi Restaurante</title>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CONFIG — editar estos valores para personalizar la app
+═══════════════════════════════════════════════════════════ -->
+<script>
+const CONFIG = {
+  // Identidad del negocio
+  nombre:        "Mi Restaurante",
+  logo:          "",                        // URL de imagen o "" para usar iniciales
+  tagline:       "Delivery a tu puerta",
+  whatsappNegocio: "5491100000000",         // número completo sin + ni espacios
+
+  // Colores (hex)
+  colorFondo:    "#1A1208",
+  colorSuperficie:"#2A1F0F",
+  colorAccento:  "#D4872A",
+  colorTexto:    "#F5EDD8",
+  colorTextoSub: "#B8A98A",
+
+  // GAS (Google Apps Script) — completar tras publicar el backend
+  gasURL:        "https://script.google.com/macros/s/AKfycbyRWrhQEZ7O_1cS26GvND38AxK5VRUhlAcdfWGmgF7tqWhzSFIw985_ZTZHj069RO_UeA/exec",   // "https://script.google.com/macros/s/XXXX/exec"
+
+  // Horario de atención (para mostrar aviso fuera de horario)
+  horario: {
+    dias: [0,1,2,3,4,5,6],   // 0=Dom...6=Sab, todos activo
+    abre:  "11:00",
+    cierra:"23:00"
+  },
+
+  // Zona de entrega
+  zonaEntrega: "Ciudad de Buenos Aires y GBA",
+
+  // Tiempo estimado de entrega (minutos)
+  tiempoEstimado: "45-60"
+};
+</script>
+
+<style>
+/* ── Reset & Variables ──────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #1A1208;
+  --surface: #2A1F0F;
+  --surface2:#352810;
+  --accent:  #D4872A;
+  --accent2: #E8A44A;
+  --text:    #F5EDD8;
+  --textsub: #B8A98A;
+  --textsub2:#7A6A52;
+  --danger:  #C0392B;
+  --success: #27AE60;
+  --radius:  14px;
+  --ticket-bg: #FEFDF8;
+  --ticket-border: #D4CDB5;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Google Fonts ───────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+/* ── Utilities ──────────────────────────────────────────── */
+.hidden { display: none !important; }
+.sr-only { position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0); }
+
+/* ── HEADER ─────────────────────────────────────────────── */
+#header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg);
+  border-bottom: 1px solid #3A2E1A;
+  padding: 0 16px;
+}
+.header-inner {
+  max-width: 700px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 60px;
+}
+#logo-img {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent);
+}
+#logo-initials {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: 'Playfair Display', serif;
+  font-size: 16px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+#nombre-negocio {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px; font-weight: 700;
+  color: var(--text);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#btn-cuenta {
+  background: none; border: none;
+  color: var(--textsub);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: color .2s, background .2s;
+  display: flex; align-items: center; justify-content: center;
+}
+#btn-cuenta:hover { color: var(--text); background: var(--surface2); }
+#btn-cuenta svg { width: 22px; height: 22px; }
+
+/* ── BANNER OFFLINE / FUERA DE HORARIO ─────────────────── */
+#banner-fuera {
+  background: var(--surface);
+  border-bottom: 1px solid var(--accent);
+  padding: 10px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--accent);
+}
+
+/* ── HERO ───────────────────────────────────────────────── */
+#hero {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px 16px 8px;
+}
+#hero-tagline {
+  font-size: 13px;
+  color: var(--textsub);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+#hero-meta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.hero-badge {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; color: var(--textsub);
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 4px 10px;
+}
+.hero-badge svg { width: 14px; height: 14px; color: var(--accent); flex-shrink: 0; }
+
+/* ── CATEGORÍAS (chips) ─────────────────────────────────── */
+#cats-wrap {
+  position: sticky;
+  top: 60px;
+  z-index: 90;
+  background: var(--bg);
+  border-bottom: 1px solid #3A2E1A;
+  padding: 0;
+}
+#cats-scroll {
+  max-width: 700px;
+  margin: 0 auto;
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+#cats-scroll::-webkit-scrollbar { display: none; }
+.cat-chip {
+  flex-shrink: 0;
+  background: var(--surface);
+  color: var(--textsub);
+  border: 1px solid transparent;
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 13px; font-weight: 500;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.cat-chip:hover { color: var(--text); border-color: var(--accent); }
+.cat-chip.active {
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 700;
+  border-color: var(--accent);
+}
+
+/* ── GRID DE PRODUCTOS ──────────────────────────────────── */
+#productos-section {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 16px 16px 120px;
+}
+.seccion-titulo {
+  font-family: 'Playfair Display', serif;
+  font-size: 19px; font-weight: 600;
+  color: var(--text);
+  margin: 24px 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #3A2E1A;
+}
+.seccion-titulo:first-child { margin-top: 8px; }
+
+#grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* ── CARD ───────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform .2s, box-shadow .2s;
+  position: relative;
+  border: 1px solid #3A2E1A;
+}
+.card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+.card:active { transform: scale(.97); }
+
+.card-img-wrap {
+  width: 100%; aspect-ratio: 4/3;
+  background: var(--surface2);
+  overflow: hidden;
+  position: relative;
+}
+.card-img-wrap img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform .3s;
+}
+.card:hover .card-img-wrap img { transform: scale(1.04); }
+.card-no-img {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px;
+}
+
+.card-badge {
+  position: absolute; top: 8px; left: 8px;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.card-body { padding: 10px 12px 12px; }
+.card-nombre {
+  font-weight: 600; font-size: 14px;
+  line-height: 1.3;
+  color: var(--text);
+  margin-bottom: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-desc {
+  font-size: 12px;
+  color: var(--textsub);
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.4;
+}
+.card-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px;
+}
+.card-precio {
+  font-size: 15px; font-weight: 700;
+  color: var(--accent);
+}
+.card-add-btn {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--bg);
+  border: none; cursor: pointer;
+  font-size: 18px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s, transform .15s;
+  flex-shrink: 0;
+}
+.card-add-btn:active { transform: scale(.88); }
+.card-add-btn:hover { background: var(--accent2); }
+
+.card-unavail {
+  position: absolute; inset: 0;
+  background: rgba(26,18,8,.75);
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius);
+}
+.card-unavail span {
+  background: var(--surface);
+  color: var(--textsub);
+  font-size: 11px; font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 10px;
+  letter-spacing: .05em;
+}
+
+/* ── ESTADO VACÍO ───────────────────────────────────────── */
+#empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--textsub);
+}
+#empty-state svg { width: 60px; height: 60px; color: var(--textsub2); margin-bottom: 16px; }
+#empty-state p { font-size: 15px; }
+
+/* ── FAB CARRITO ────────────────────────────────────────── */
+#fab-carrito {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 30px;
+  padding: 14px 24px;
+  font-size: 15px; font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 6px 28px rgba(212,135,42,.45);
+  transition: transform .2s, box-shadow .2s, opacity .3s;
+  min-width: 200px;
+  justify-content: center;
+  white-space: nowrap;
+}
+#fab-carrito.hidden-fab { opacity: 0; pointer-events: none; transform: translateX(-50%) translateY(20px); }
+#fab-carrito:active { transform: translateX(-50%) scale(.96); }
+#fab-carrito svg { width: 20px; height: 20px; flex-shrink: 0; }
+#fab-badge {
+  background: var(--bg);
+  color: var(--accent);
+  border-radius: 50%;
+  width: 20px; height: 20px;
+  font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── MODALES ────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(10,6,2,.85);
+  z-index: 300;
+  display: flex; align-items: flex-end; justify-content: center;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: fadeIn .2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-sheet {
+  width: 100%;
+  max-width: 700px;
+  max-height: 92dvh;
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp .3s cubic-bezier(.32,0,.15,1);
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.modal-header {
+  display: flex; align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #3A2E1A;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.modal-titulo {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px; font-weight: 600;
+  flex: 1;
+}
+.modal-close {
+  background: var(--surface2);
+  border: none;
+  color: var(--textsub);
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex; align-items: center; justify-content: center;
+  transition: color .2s;
+  flex-shrink: 0;
+}
+.modal-close:hover { color: var(--text); }
+.modal-body {
+  overflow-y: auto;
+  flex: 1;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── MODAL DETALLE PRODUCTO ─────────────────────────────── */
+#modal-producto .prod-img {
+  width: 100%; aspect-ratio: 16/9;
+  object-fit: cover;
+  background: var(--surface2);
+}
+#modal-producto .prod-img-placeholder {
+  width: 100%; aspect-ratio: 16/9;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface2);
+  font-size: 60px;
+}
+.prod-info { padding: 20px; }
+.prod-nombre { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+.prod-desc { font-size: 14px; color: var(--textsub); line-height: 1.6; margin-bottom: 16px; }
+.prod-precio-grande { font-size: 26px; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+.prod-aviso {
+  font-size: 12px;
+  color: var(--accent);
+  background: rgba(212,135,42,.12);
+  border: 1px solid rgba(212,135,42,.3);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.prod-actions {
+  display: flex; gap: 10px; padding: 0 20px 20px;
+  flex-shrink: 0;
+}
+.btn-wsp {
+  flex: 0 0 auto;
+  background: #25D366;
+  color: #fff;
+  border: none; border-radius: 10px;
+  padding: 13px 16px;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  transition: background .2s;
+}
+.btn-wsp:hover { background: #1ebe5a; }
+.btn-wsp svg { width: 18px; height: 18px; }
+.btn-agregar-modal {
+  flex: 1;
+  background: var(--accent);
+  color: var(--bg);
+  border: none; border-radius: 10px;
+  padding: 13px;
+  font-size: 15px; font-weight: 700;
+  cursor: pointer;
+  transition: background .2s;
+}
+.btn-agregar-modal:hover { background: var(--accent2); }
+
+/* ── MODAL CARRITO (ticket) ─────────────────────────────── */
+#modal-carrito .modal-sheet { background: var(--ticket-bg); color: #1A1208; }
+#modal-carrito .modal-header { border-bottom-color: var(--ticket-border); }
+#modal-carrito .modal-titulo { color: #1A1208; font-family: 'Playfair Display',serif; }
+#modal-carrito .modal-close { background: #EEE8D5; color: #7A6A52; }
+
+.ticket-perforation {
+  height: 20px;
+  background: repeating-linear-gradient(90deg, transparent, transparent 8px, var(--ticket-bg) 8px, var(--ticket-bg) 16px);
+  border-top: 2px dashed var(--ticket-border);
+  border-bottom: 2px dashed var(--ticket-border);
+  margin: 4px 0;
+}
+
+.carrito-body { padding: 16px 20px; }
+.carrito-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--ticket-border);
+}
+.carrito-item:last-child { border-bottom: none; }
+.ci-nombre { flex: 1; font-size: 14px; font-weight: 600; color: #1A1208; line-height: 1.3; }
+.ci-cant {
+  display: flex; align-items: center; gap: 6px;
+}
+.ci-cant button {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--ticket-border);
+  background: #EEE8D5;
+  color: #1A1208;
+  font-size: 16px; font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+  line-height: 1;
+}
+.ci-cant button:hover { background: #D4CDB5; }
+.ci-cant span { font-size: 15px; font-weight: 700; color: #1A1208; min-width: 18px; text-align: center; }
+.ci-precio { font-size: 14px; font-weight: 700; color: #1A1208; min-width: 70px; text-align: right; }
+
+.carrito-total-line {
+  display: flex; justify-content: space-between;
+  padding: 14px 20px 4px;
+  border-top: 2px solid #1A1208;
+  font-size: 16px; font-weight: 700;
+  color: #1A1208;
+  flex-shrink: 0;
+}
+.carrito-total-line span:last-child { font-size: 20px; }
+
+.carrito-foot {
+  padding: 12px 20px 20px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.btn-confirmar {
+  background: #D4872A;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 15px;
+  font-size: 16px; font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  transition: background .2s;
+}
+.btn-confirmar:hover { background: #b8711e; }
+.btn-vaciar {
+  background: none;
+  border: 1px solid var(--ticket-border);
+  color: #7A6A52;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 13px;
+  cursor: pointer;
+  width: 100%;
+  transition: color .2s;
+}
+.btn-vaciar:hover { color: #C0392B; border-color: #C0392B; }
+
+/* ── MODAL USUARIO ──────────────────────────────────────── */
+#modal-usuario .modal-sheet { background: var(--surface); }
+.form-section { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.field-group { display: flex; flex-direction: column; gap: 6px; }
+.field-group label { font-size: 12px; font-weight: 600; color: var(--textsub); letter-spacing: .06em; text-transform: uppercase; }
+.field-group input, .field-group textarea {
+  background: var(--surface2);
+  border: 1px solid #3A2E1A;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 15px;
+  font-family: inherit;
+  transition: border-color .2s;
+  width: 100%;
+}
+.field-group input:focus, .field-group textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.field-group input.error { border-color: var(--danger); }
+.field-group textarea { min-height: 80px; resize: vertical; }
+.field-hint { font-size: 11px; color: var(--textsub2); margin-top: 2px; }
+.field-error { font-size: 11px; color: var(--danger); margin-top: 2px; display: none; }
+.field-group.has-error .field-error { display: block; }
+.field-group.has-error input { border-color: var(--danger); }
+
+.form-footer { padding: 12px 20px 24px; flex-shrink: 0; }
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg);
+  border: none; border-radius: 10px;
+  padding: 15px;
+  font-size: 16px; font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  transition: background .2s, opacity .2s;
+}
+.btn-primary:hover { background: var(--accent2); }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+.usuario-info-bar {
+  display: flex; align-items: center;
+  padding: 12px 20px;
+  gap: 10px;
+  background: var(--surface2);
+  border-radius: 10px;
+  margin: 0 20px 4px;
+  cursor: pointer;
+}
+.uib-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 700; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.uib-data { flex: 1; }
+.uib-nombre { font-size: 14px; font-weight: 600; color: var(--text); }
+.uib-tel { font-size: 12px; color: var(--textsub); }
+.uib-edit { font-size: 12px; color: var(--accent); }
+
+/* ── MODAL CHECKOUT ─────────────────────────────────────── */
+.checkout-resumen {
+  padding: 16px 20px;
+  background: var(--ticket-bg);
+  margin: 16px 20px;
+  border-radius: 12px;
+  border: 1px dashed var(--ticket-border);
+  color: #1A1208;
+}
+.checkout-resumen h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px; margin-bottom: 10px; color: #1A1208;
+}
+.co-item { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; color: #3A2E1A; }
+.co-total { display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; padding-top: 8px; border-top: 1px solid var(--ticket-border); margin-top: 6px; color: #1A1208; }
+
+.checkout-nota {
+  padding: 0 20px 12px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.checkout-nota label { font-size: 12px; color: var(--textsub); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.checkout-nota textarea {
+  background: var(--surface2);
+  border: 1px solid #3A2E1A;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  min-height: 70px; resize: none;
+  transition: border-color .2s;
+}
+.checkout-nota textarea:focus { outline: none; border-color: var(--accent); }
+
+/* ── MODAL PWA SAFARI ───────────────────────────────────── */
+#modal-pwa .modal-sheet { background: var(--surface); padding-bottom: env(safe-area-inset-bottom); }
+.pwa-steps { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.pwa-step {
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.pwa-step-n {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.pwa-step-text { font-size: 14px; color: var(--text); line-height: 1.5; }
+.pwa-step-text strong { color: var(--accent); }
+.pwa-icon-inline {
+  display: inline-flex; align-items: center; vertical-align: middle;
+  background: var(--surface2); border-radius: 4px; padding: 2px 5px; margin: 0 2px;
+}
+.pwa-icon-inline svg { width: 16px; height: 16px; color: var(--accent); }
+
+/* ── BANNER PWA ANDROID ─────────────────────────────────── */
+#banner-pwa {
+  position: fixed;
+  bottom: 90px;
+  left: 50%; transform: translateX(-50%);
+  z-index: 150;
+  width: calc(100% - 32px);
+  max-width: 500px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex; gap: 12px; align-items: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  animation: slideUpBanner .3s ease;
+}
+@keyframes slideUpBanner { from { opacity:0; transform: translateX(-50%) translateY(20px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+#banner-pwa .pwa-icon-lg {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 22px;
+}
+#banner-pwa .pwa-txt { flex: 1; }
+#banner-pwa .pwa-txt strong { font-size: 13px; font-weight: 700; color: var(--text); display: block; }
+#banner-pwa .pwa-txt span { font-size: 12px; color: var(--textsub); }
+#banner-pwa .btn-install {
+  background: var(--accent); color: var(--bg);
+  border: none; border-radius: 8px;
+  padding: 8px 14px; font-size: 13px; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+}
+#banner-pwa .btn-dismiss {
+  background: none; border: none;
+  color: var(--textsub); cursor: pointer;
+  font-size: 20px; padding: 4px;
+}
+
+/* ── TOAST ──────────────────────────────────────────────── */
+#toast {
+  position: fixed;
+  bottom: 90px;
+  left: 50%; transform: translateX(-50%);
+  z-index: 400;
+  background: var(--surface2);
+  color: var(--text);
+  border-radius: 24px;
+  padding: 10px 20px;
+  font-size: 14px; font-weight: 500;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0,0,0,.4);
+  opacity: 0;
+  transition: opacity .3s;
+  pointer-events: none;
+  border: 1px solid #3A2E1A;
+}
+#toast.show { opacity: 1; }
+
+/* ── SPINNER ────────────────────────────────────────────── */
+.spinner {
+  width: 22px; height: 22px;
+  border: 3px solid rgba(255,255,255,.2);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+@media (min-width: 480px) {
+  #grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+}
+@media (max-width: 340px) {
+  #grid { grid-template-columns: 1fr; }
+  .card-img-wrap { aspect-ratio: 16/9; }
+}
+
+/* Safe area bottom */
+#fab-carrito { bottom: calc(24px + env(safe-area-inset-bottom)); }
+</style>
+</head>
+
+<body>
+
+<!-- ═══ HEADER ═══════════════════════════════════════════ -->
+<header id="header">
+  <div class="header-inner">
+    <div id="logo-wrap"></div>
+    <span id="nombre-negocio"></span>
+    <button id="btn-cuenta" aria-label="Mi cuenta">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<!-- ═══ BANNER FUERA DE HORARIO ══════════════════════════ -->
+<div id="banner-fuera" class="hidden"></div>
+
+<!-- ═══ HERO ══════════════════════════════════════════════ -->
+<div id="hero">
+  <div id="hero-tagline"></div>
+  <div id="hero-meta">
+    <span class="hero-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+      </svg>
+      <span id="hero-tiempo"></span>
+    </span>
+    <span class="hero-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/>
+      </svg>
+      <span id="hero-zona"></span>
+    </span>
+  </div>
+</div>
+
+<!-- ═══ CATEGORÍAS ════════════════════════════════════════ -->
+<div id="cats-wrap">
+  <div id="cats-scroll"></div>
+</div>
+
+<!-- ═══ PRODUCTOS ═════════════════════════════════════════ -->
+<section id="productos-section">
+  <div id="grid"></div>
+  <div id="empty-state" class="hidden">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
+    </svg>
+    <p>No hay productos disponibles en este momento.</p>
+  </div>
+</section>
+
+<!-- ═══ FAB CARRITO ═══════════════════════════════════════ -->
+<button id="fab-carrito" class="hidden-fab" aria-label="Ver carrito">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/>
+  </svg>
+  Ver pedido
+  <span id="fab-badge">0</span>
+</button>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL: DETALLE PRODUCTO
+══════════════════════════════════════════════════════════ -->
+<div id="modal-producto" class="modal-overlay hidden" role="dialog" aria-modal="true">
+  <div class="modal-sheet">
+    <div id="mp-media"></div>
+    <div class="modal-body">
+      <div class="prod-info">
+        <div class="prod-nombre" id="mp-nombre"></div>
+        <div class="prod-desc" id="mp-desc"></div>
+        <div class="prod-precio-grande" id="mp-precio"></div>
+        <div class="prod-aviso hidden" id="mp-aviso"></div>
+      </div>
+    </div>
+    <div class="prod-actions">
+      <button class="btn-wsp" id="mp-wsp">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+        Compartir
+      </button>
+      <button class="btn-agregar-modal" id="mp-agregar">Agregar al pedido</button>
+      <button class="modal-close" id="mp-close" aria-label="Cerrar">×</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL: CARRITO (ticket)
+══════════════════════════════════════════════════════════ -->
+<div id="modal-carrito" class="modal-overlay hidden" role="dialog" aria-modal="true">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A1208" stroke-width="2">
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/>
+      </svg>
+      <span class="modal-titulo" style="color:#1A1208">Tu pedido</span>
+      <button class="modal-close" id="carrito-close" aria-label="Cerrar">×</button>
+    </div>
+    <div class="ticket-perforation"></div>
+    <div class="modal-body">
+      <div class="carrito-body" id="carrito-items"></div>
+    </div>
+    <div class="carrito-total-line">
+      <span>Total</span>
+      <span id="carrito-total">$0</span>
+    </div>
+    <div class="carrito-foot">
+      <button class="btn-confirmar" id="btn-confirmar-pedido">Confirmar pedido</button>
+      <button class="btn-vaciar" id="btn-vaciar-carrito">Vaciar carrito</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL: USUARIO (registro / edición)
+══════════════════════════════════════════════════════════ -->
+<div id="modal-usuario" class="modal-overlay hidden" role="dialog" aria-modal="true">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <span class="modal-titulo" id="mu-titulo">Tus datos</span>
+      <button class="modal-close" id="mu-close" aria-label="Cerrar">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-section">
+        <div class="field-group" id="fg-nombre">
+          <label for="inp-nombre">Nombre completo</label>
+          <input type="text" id="inp-nombre" placeholder="Tu nombre y apellido" autocomplete="name" maxlength="80">
+          <span class="field-error">Ingresá tu nombre completo.</span>
+        </div>
+        <div class="field-group" id="fg-wsp">
+          <label for="inp-wsp">WhatsApp</label>
+          <input type="tel" id="inp-wsp" placeholder="Ej: 1134567890" autocomplete="tel" maxlength="20">
+          <span class="field-hint">Solo el número, sin 0 ni 15. Ej: 1134567890</span>
+          <span class="field-error">Ingresá un número válido (10 dígitos).</span>
+        </div>
+        <div class="field-group" id="fg-dir">
+          <label for="inp-dir">Dirección de entrega</label>
+          <input type="text" id="inp-dir" placeholder="Calle y número, piso/depto" autocomplete="street-address" maxlength="120">
+          <span class="field-hint">Incluí piso/depto si corresponde.</span>
+          <span class="field-error">Ingresá tu dirección completa.</span>
+        </div>
+        <div class="field-group" id="fg-barrio">
+          <label for="inp-barrio">Barrio / Localidad</label>
+          <input type="text" id="inp-barrio" placeholder="Ej: Palermo, Buenos Aires" autocomplete="address-level2" maxlength="80">
+          <span class="field-error">Indicá tu barrio o localidad.</span>
+        </div>
+        <div class="field-group">
+          <label for="inp-ref">Referencia (opcional)</label>
+          <textarea id="inp-ref" placeholder="Entre calles, edificio, color de puerta..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="form-footer">
+      <button class="btn-primary" id="btn-guardar-usuario">Guardar datos</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL: CHECKOUT FINAL
+══════════════════════════════════════════════════════════ -->
+<div id="modal-checkout" class="modal-overlay hidden" role="dialog" aria-modal="true">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <span class="modal-titulo">Confirmá tu pedido</span>
+      <button class="modal-close" id="co-close" aria-label="Cerrar">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="co-usuario-bar" class="usuario-info-bar">
+        <div class="uib-avatar" id="co-avatar"></div>
+        <div class="uib-data">
+          <div class="uib-nombre" id="co-nombre"></div>
+          <div class="uib-tel" id="co-dir"></div>
+        </div>
+        <span class="uib-edit">Editar</span>
+      </div>
+      <div class="checkout-resumen">
+        <h3>Resumen</h3>
+        <div id="co-items-list"></div>
+        <div class="co-total">
+          <span>Total</span>
+          <span id="co-total-val"></span>
+        </div>
+      </div>
+      <div class="checkout-nota">
+        <label for="inp-nota">Nota para el pedido (opcional)</label>
+        <textarea id="inp-nota" placeholder="Sin cebolla, bien cocido, etc."></textarea>
+      </div>
+    </div>
+    <div class="form-footer">
+      <button class="btn-primary" id="btn-enviar-pedido">
+        Enviar pedido por WhatsApp
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL: PWA SAFARI
+══════════════════════════════════════════════════════════ -->
+<div id="modal-pwa" class="modal-overlay hidden" role="dialog" aria-modal="true">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <span class="modal-titulo">Instalá la app</span>
+      <button class="modal-close" id="pwa-close" aria-label="Cerrar">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="pwa-steps">
+        <p style="color:var(--textsub);font-size:13px;margin-bottom:4px;">
+          Para tener acceso rápido a nuestro menú, instalá la app en tu iPhone:
+        </p>
+        <div class="pwa-step">
+          <div class="pwa-step-n">1</div>
+          <div class="pwa-step-text">
+            Tocá el botón <strong>Compartir</strong>
+            <span class="pwa-icon-inline">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/>
+              </svg>
+            </span>
+            en la barra inferior del navegador.
+          </div>
+        </div>
+        <div class="pwa-step">
+          <div class="pwa-step-n">2</div>
+          <div class="pwa-step-text">
+            Deslizá hacia abajo y elegí <strong>"Agregar a la pantalla de inicio"</strong>.
+          </div>
+        </div>
+        <div class="pwa-step">
+          <div class="pwa-step-n">3</div>
+          <div class="pwa-step-text">
+            Tocá <strong>Agregar</strong> en la esquina superior derecha. ¡Listo!
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-footer">
+      <button class="btn-primary" id="pwa-entendido">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ BANNER PWA ANDROID ════════════════════════════════ -->
+<div id="banner-pwa" class="hidden">
+  <div class="pwa-icon-lg">🍽️</div>
+  <div class="pwa-txt">
+    <strong id="banner-pwa-nombre"></strong>
+    <span>Instalá la app para acceso rápido</span>
+  </div>
+  <button class="btn-install" id="btn-install-pwa">Instalar</button>
+  <button class="btn-dismiss" id="btn-dismiss-pwa" aria-label="Cerrar">×</button>
+</div>
+
+<!-- ═══ TOAST ══════════════════════════════════════════════ -->
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- ═══════════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════════════ -->
+<script>
+// ── Aplicar CONFIG al DOM ────────────────────────────────
+(function applyConfig() {
+  document.title = CONFIG.nombre;
+  document.querySelector('meta[name="apple-mobile-web-app-title"]').content = CONFIG.nombre;
+  document.getElementById('nombre-negocio').textContent = CONFIG.nombre;
+  document.getElementById('hero-tagline').textContent = CONFIG.tagline;
+  document.getElementById('hero-tiempo').textContent = `${CONFIG.tiempoEstimado} min`;
+  document.getElementById('hero-zona').textContent = CONFIG.zonaEntrega;
+  document.getElementById('banner-pwa-nombre').textContent = CONFIG.nombre;
+
+  // Logo o iniciales
+  const wrap = document.getElementById('logo-wrap');
+  if (CONFIG.logo) {
+    wrap.innerHTML = `<img id="logo-img" src="${CONFIG.logo}" alt="Logo ${CONFIG.nombre}" onerror="this.style.display='none'">`;
+  } else {
+    const ini = CONFIG.nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    wrap.innerHTML = `<div id="logo-initials">${ini}</div>`;
+  }
+
+  // Colores CSS
+  const r = document.documentElement.style;
+  r.setProperty('--bg', CONFIG.colorFondo);
+  r.setProperty('--surface', CONFIG.colorSuperficie);
+  r.setProperty('--accent', CONFIG.colorAccento);
+  r.setProperty('--text', CONFIG.colorTexto);
+  r.setProperty('--textsub', CONFIG.colorTextoSub);
+  document.querySelector('meta[name="theme-color"]').content = CONFIG.colorFondo;
+})();
+
+// ── Estado global ────────────────────────────────────────
+let productos = [];       // cargados desde GAS o datos de demo
+let categorias = [];
+let catActiva = 'todas';
+let carrito = [];         // [{id, nombre, precio, cantidad}]
+let productoActual = null;
+let usuario = null;       // {nombre, wsp, direccion, barrio, ref}
+let deferredPrompt = null;
+
+// ── Utilidades ───────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const fmt = n => '$' + Number(n).toLocaleString('es-AR');
+
+function showToast(msg, dur = 2500) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), dur);
+}
+
+function openModal(id) {
+  $(id).classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  $(id).classList.add('hidden');
+  // Si no hay más modales abiertos, restaurar scroll
+  const abiertos = document.querySelectorAll('.modal-overlay:not(.hidden)');
+  if (!abiertos.length) document.body.style.overflow = '';
+}
+function closeAllModals() {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden'));
+  document.body.style.overflow = '';
+}
+
+// Cerrar modal al tocar overlay (fuera del sheet)
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closeModal(overlay.id);
+  });
+});
+
+// ── Persistencia usuario ─────────────────────────────────
+function cargarUsuario() {
+  try { usuario = JSON.parse(localStorage.getItem('gastro_usuario')) || null; } catch { usuario = null; }
+}
+function guardarUsuario(u) {
+  usuario = u;
+  localStorage.setItem('gastro_usuario', JSON.stringify(u));
+}
+
+// ── Persistencia carrito ─────────────────────────────────
+function cargarCarrito() {
+  try { carrito = JSON.parse(localStorage.getItem('gastro_carrito')) || []; } catch { carrito = []; }
+}
+function guardarCarrito() {
+  localStorage.setItem('gastro_carrito', JSON.stringify(carrito));
+}
+
+// ── Horario de atención ──────────────────────────────────
+function estaAbierto() {
+  const h = CONFIG.horario;
+  const now = new Date();
+  const dia = now.getDay();
+  if (!h.dias.includes(dia)) return false;
+  const [ah, am] = h.abre.split(':').map(Number);
+  const [ch, cm] = h.cierra.split(':').map(Number);
+  const mins = now.getHours() * 60 + now.getMinutes();
+  return mins >= ah * 60 + am && mins < ch * 60 + cm;
+}
+
+function checkHorario() {
+  const banner = $('banner-fuera');
+  if (!estaAbierto()) {
+    banner.textContent = `⏰ Estamos cerrados. Horario: ${CONFIG.horario.abre} – ${CONFIG.horario.cierra} hs.`;
+    banner.classList.remove('hidden');
+  } else {
+    banner.classList.add('hidden');
+  }
+}
+
+// ── Disponibilidad de producto ───────────────────────────
+function estaDisponible(p) {
+  if (!p.activo) return false;
+
+  // "Solo por hoy" — verificar fecha
+  if (p.soloHoy) {
+    const hoy = new Date().toISOString().slice(0,10);
+    if (p.fechaAlta !== hoy) return false;
+  }
+
+  // "Pedidos hasta el día X"
+  if (p.pedidosHasta) {
+    const hasta = new Date(p.pedidosHasta + 'T23:59:59');
+    if (new Date() > hasta) return false;
+  }
+
+  // Filtro por día de la semana
+  if (p.diasSemana && p.diasSemana.length > 0) {
+    const dia = new Date().getDay();
+    if (!p.diasSemana.includes(dia)) return false;
+  }
+
+  // Filtro por hora
+  if (p.horaDesde || p.horaHasta) {
+    const [hd, md] = (p.horaDesde || '00:00').split(':').map(Number);
+    const [hh, mh] = (p.horaHasta || '23:59').split(':').map(Number);
+    const now = new Date();
+    const mins = now.getHours() * 60 + now.getMinutes();
+    if (mins < hd * 60 + md || mins > hh * 60 + mh) return false;
+  }
+
+  return true;
+}
+
+function badgeAviso(p) {
+  if (p.soloHoy) return '⭐ Solo hoy';
+  if (p.pedidosHasta) return `📅 Hasta ${p.pedidosHasta}`;
+  return null;
+}
+
+// ── Datos de DEMO (mientras no haya GAS) ─────────────────
+const DATOS_DEMO = [
+  { id:'1', nombre:'Hamburguesa Clásica', desc:'Medallón de carne 200g, cheddar, lechuga, tomate y aderezo de la casa en pan brioche.', precio:2800, categoria:'Hamburguesas', emoji:'🍔', activo:true, soloHoy:false },
+  { id:'2', nombre:'Hamburguesa BBQ', desc:'Doble medallón, panceta crocante, cheddar y salsa barbacoa ahumada.', precio:3500, categoria:'Hamburguesas', emoji:'🍔', activo:true, soloHoy:true },
+  { id:'3', nombre:'Pizza Mozzarella', desc:'Salsa de tomate, mozzarella fresca y orégano. Masa artesanal.', precio:3200, categoria:'Pizzas', emoji:'🍕', activo:true },
+  { id:'4', nombre:'Pizza Fugazzeta', desc:'Cebolla caramelizada, mozzarella abundante y aceitunas verdes.', precio:3600, categoria:'Pizzas', emoji:'🍕', activo:true },
+  { id:'5', nombre:'Papas Fritas', desc:'Porción grande de papas fritas con crocante exterior y suave interior.', precio:1200, categoria:'Acompañamientos', emoji:'🍟', activo:true },
+  { id:'6', nombre:'Aros de Cebolla', desc:'Aros de cebolla rebozados y fritos, servidos con dip de mostaza y miel.', precio:1400, categoria:'Acompañamientos', emoji:'🧅', activo:true },
+  { id:'7', nombre:'Gaseosa 500ml', desc:'Coca-Cola, Sprite o Fanta. Indicá tu preferencia en la nota del pedido.', precio:700, categoria:'Bebidas', emoji:'🥤', activo:true },
+  { id:'8', nombre:'Agua Mineral', desc:'Agua mineral sin gas 500ml.', precio:500, categoria:'Bebidas', emoji:'💧', activo:true },
+  { id:'9', nombre:'Combo Familiar', desc:'2 hamburguesas, 1 pizza mozzarella, papas fritas y 2 gaseosas.', precio:9500, categoria:'Combos', emoji:'🎁', activo:false },
+];
+
+// ── Cargar productos (GAS o demo) ────────────────────────
+async function cargarProductos() {
+  if (CONFIG.gasURL) {
+    try {
+      const r = await fetch(CONFIG.gasURL + '?action=getProductos');
+      const data = await r.json();
+      if (data.ok) { productos = data.productos; return; }
+    } catch {}
+  }
+  // Fallback demo
+  productos = DATOS_DEMO;
+}
+
+// ── Render categorías ────────────────────────────────────
+function renderCats() {
+  const scroll = $('cats-scroll');
+  categorias = ['todas', ...new Set(productos.map(p => p.categoria).filter(Boolean))];
+  scroll.innerHTML = categorias.map(c => `
+    <button class="cat-chip${c === catActiva ? ' active':''}" data-cat="${c}">
+      ${c === 'todas' ? 'Todo el menú' : c}
+    </button>
+  `).join('');
+  scroll.querySelectorAll('.cat-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      catActiva = btn.dataset.cat;
+      renderCats();
+      renderGrid();
+    });
+  });
+}
+
+// ── Render grid ──────────────────────────────────────────
+function renderGrid() {
+  const grid = $('grid');
+  const empty = $('empty-state');
+
+  const filtrados = catActiva === 'todas'
+    ? productos
+    : productos.filter(p => p.categoria === catActiva);
+
+  if (!filtrados.length) {
+    grid.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  // Agrupar por categoría si está en "todas"
+  if (catActiva === 'todas') {
+    const grupos = {};
+    filtrados.forEach(p => { (grupos[p.categoria] = grupos[p.categoria]||[]).push(p); });
+    grid.innerHTML = '';
+    Object.entries(grupos).forEach(([cat, prods]) => {
+      const titulo = document.createElement('div');
+      titulo.className = 'seccion-titulo';
+      titulo.textContent = cat;
+      titulo.style.gridColumn = '1 / -1';
+      grid.appendChild(titulo);
+      prods.forEach(p => grid.appendChild(crearCard(p)));
+    });
+  } else {
+    grid.innerHTML = '';
+    filtrados.forEach(p => grid.appendChild(crearCard(p)));
+  }
+}
+
+function crearCard(p) {
+  const disp = estaDisponible(p);
+  const aviso = badgeAviso(p);
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.innerHTML = `
+    <div class="card-img-wrap">
+      ${p.foto
+        ? `<img src="${p.foto}" alt="${p.nombre}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=card-no-img>${p.emoji||'🍽️'}</div>'">`
+        : `<div class="card-no-img">${p.emoji||'🍽️'}</div>`}
+    </div>
+    ${aviso ? `<div class="card-badge">${aviso}</div>` : ''}
+    <div class="card-body">
+      <div class="card-nombre">${p.nombre}</div>
+      ${p.desc ? `<div class="card-desc">${p.desc}</div>` : ''}
+      <div class="card-footer">
+        <span class="card-precio">${fmt(p.precio)}</span>
+        ${disp ? `<button class="card-add-btn" aria-label="Agregar ${p.nombre}">+</button>` : ''}
+      </div>
+    </div>
+    ${!disp ? `<div class="card-unavail"><span>No disponible</span></div>` : ''}
+  `;
+  if (disp) {
+    div.querySelector('.card-add-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      agregarAlCarrito(p);
+    });
+  }
+  div.addEventListener('click', () => abrirProducto(p));
+  return div;
+}
+
+// ── Modal producto ───────────────────────────────────────
+function abrirProducto(p) {
+  productoActual = p;
+  const disp = estaDisponible(p);
+  const aviso = badgeAviso(p);
+
+  $('mp-nombre').textContent = p.nombre;
+  $('mp-desc').textContent = p.desc || '';
+  $('mp-precio').textContent = fmt(p.precio);
+
+  const av = $('mp-aviso');
+  if (aviso) { av.textContent = aviso; av.classList.remove('hidden'); }
+  else { av.classList.add('hidden'); }
+
+  const media = $('mp-media');
+  if (p.foto) {
+    media.innerHTML = `<img class="prod-img" src="${p.foto}" alt="${p.nombre}" onerror="this.outerHTML='<div class=prod-img-placeholder>${p.emoji||'🍽️'}</div>'">`;
+  } else {
+    media.innerHTML = `<div class="prod-img-placeholder">${p.emoji||'🍽️'}</div>`;
+  }
+
+  const btnAg = $('mp-agregar');
+  if (disp) {
+    btnAg.textContent = 'Agregar al pedido';
+    btnAg.disabled = false;
+  } else {
+    btnAg.textContent = 'No disponible';
+    btnAg.disabled = true;
+  }
+
+  openModal('modal-producto');
+}
+
+$('mp-close').addEventListener('click', () => closeModal('modal-producto'));
+$('mp-agregar').addEventListener('click', () => {
+  if (productoActual && estaDisponible(productoActual)) {
+    agregarAlCarrito(productoActual);
+    closeModal('modal-producto');
+  }
+});
+$('mp-wsp').addEventListener('click', () => {
+  if (!productoActual) return;
+  const url = encodeURIComponent(
+    `🍽️ *${productoActual.nombre}* — ${fmt(productoActual.precio)}\n${window.location.href}`
+  );
+  window.open(`https://wa.me/?text=${url}`, '_blank');
+});
+
+// ── Carrito ──────────────────────────────────────────────
+function agregarAlCarrito(p) {
+  const item = carrito.find(c => c.id === p.id);
+  if (item) { item.cantidad++; }
+  else { carrito.push({id: p.id, nombre: p.nombre, precio: p.precio, emoji: p.emoji||'🍽️', cantidad: 1}); }
+  guardarCarrito();
+  actualizarFAB();
+  showToast(`✓ ${p.nombre} agregado`);
+}
+
+function quitarDelCarrito(id) {
+  const item = carrito.find(c => c.id === id);
+  if (!item) return;
+  if (item.cantidad > 1) { item.cantidad--; }
+  else { carrito = carrito.filter(c => c.id !== id); }
+  guardarCarrito();
+  actualizarFAB();
+  renderCarrito();
+  if (!carrito.length) closeModal('modal-carrito');
+}
+
+function totalCarrito() {
+  return carrito.reduce((s, c) => s + c.precio * c.cantidad, 0);
+}
+function cantidadCarrito() {
+  return carrito.reduce((s, c) => s + c.cantidad, 0);
+}
+
+function actualizarFAB() {
+  const fab = $('fab-carrito');
+  const badge = $('fab-badge');
+  const cant = cantidadCarrito();
+  if (cant > 0) {
+    badge.textContent = cant;
+    fab.classList.remove('hidden-fab');
+  } else {
+    fab.classList.add('hidden-fab');
+  }
+}
+
+function renderCarrito() {
+  const cont = $('carrito-items');
+  cont.innerHTML = carrito.map(item => `
+    <div class="carrito-item">
+      <span style="font-size:18px">${item.emoji}</span>
+      <span class="ci-nombre">${item.nombre}</span>
+      <div class="ci-cant">
+        <button onclick="quitarDelCarrito('${item.id}')" aria-label="Quitar uno">−</button>
+        <span>${item.cantidad}</span>
+        <button onclick="agregarAlCarritoById('${item.id}')" aria-label="Agregar uno">+</button>
+      </div>
+      <span class="ci-precio">${fmt(item.precio * item.cantidad)}</span>
+    </div>
+  `).join('');
+  $('carrito-total').textContent = fmt(totalCarrito());
+}
+
+window.agregarAlCarritoById = function(id) {
+  const p = productos.find(x => x.id === id);
+  if (p) agregarAlCarrito(p);
+  renderCarrito();
+};
+
+$('fab-carrito').addEventListener('click', () => {
+  renderCarrito();
+  openModal('modal-carrito');
+});
+$('carrito-close').addEventListener('click', () => closeModal('modal-carrito'));
+
+$('btn-vaciar-carrito').addEventListener('click', () => {
+  carrito = []; guardarCarrito(); actualizarFAB();
+  closeModal('modal-carrito');
+  showToast('Carrito vaciado');
+});
+
+$('btn-confirmar-pedido').addEventListener('click', () => {
+  closeModal('modal-carrito');
+  if (!usuario) {
+    // Necesita registrarse primero
+    abrirModalUsuario('registro');
+    return;
+  }
+  abrirCheckout();
+});
+
+// ── Modal usuario ────────────────────────────────────────
+let _userFlow = 'registro'; // 'registro' | 'editar'
+
+function abrirModalUsuario(flow = 'registro') {
+  _userFlow = flow;
+  $('mu-titulo').textContent = flow === 'editar' ? 'Editar mis datos' : 'Tus datos de entrega';
+  if (usuario) {
+    $('inp-nombre').value = usuario.nombre || '';
+    $('inp-wsp').value    = usuario.wsp     || '';
+    $('inp-dir').value    = usuario.direccion|| '';
+    $('inp-barrio').value = usuario.barrio  || '';
+    $('inp-ref').value    = usuario.ref     || '';
+  } else {
+    ['inp-nombre','inp-wsp','inp-dir','inp-barrio','inp-ref'].forEach(id => $(id).value = '');
+  }
+  ['fg-nombre','fg-wsp','fg-dir','fg-barrio'].forEach(id => $(id).classList.remove('has-error'));
+  openModal('modal-usuario');
+}
+
+$('btn-cuenta').addEventListener('click', () => abrirModalUsuario('editar'));
+$('mu-close').addEventListener('click', () => closeModal('modal-usuario'));
+
+function validarWsp(v) {
+  const clean = v.replace(/\D/g,'');
+  return clean.length === 10;
+}
+
+$('btn-guardar-usuario').addEventListener('click', () => {
+  let ok = true;
+  const n = $('inp-nombre').value.trim();
+  const w = $('inp-wsp').value.trim();
+  const d = $('inp-dir').value.trim();
+  const b = $('inp-barrio').value.trim();
+  const r = $('inp-ref').value.trim();
+
+  const marcar = (id, err) => { $(id).classList.toggle('has-error', err); if (err) ok = false; };
+  marcar('fg-nombre', n.length < 3);
+  marcar('fg-wsp', !validarWsp(w));
+  marcar('fg-dir', d.length < 4);
+  marcar('fg-barrio', b.length < 2);
+
+  if (!ok) return;
+
+  guardarUsuario({ nombre: n, wsp: w.replace(/\D/g,''), direccion: d, barrio: b, ref: r });
+  closeModal('modal-usuario');
+  showToast('✓ Datos guardados');
+
+  // Si venía del flujo de confirmación de pedido, abrir checkout
+  if (_userFlow === 'registro') abrirCheckout();
+});
+
+// ── Checkout ─────────────────────────────────────────────
+function abrirCheckout() {
+  if (!usuario || !carrito.length) return;
+
+  // Avatar
+  $('co-avatar').textContent = usuario.nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  $('co-nombre').textContent = usuario.nombre;
+  $('co-dir').textContent = `${usuario.direccion} — ${usuario.barrio}`;
+
+  // Resumen
+  $('co-items-list').innerHTML = carrito.map(item =>
+    `<div class="co-item"><span>${item.cantidad}× ${item.nombre}</span><span>${fmt(item.precio*item.cantidad)}</span></div>`
+  ).join('');
+  $('co-total-val').textContent = fmt(totalCarrito());
+
+  $('inp-nota').value = '';
+  $('co-usuario-bar').onclick = () => {
+    closeModal('modal-checkout');
+    abrirModalUsuario('editar');
+  };
+
+  openModal('modal-checkout');
+}
+
+$('co-close').addEventListener('click', () => closeModal('modal-checkout'));
+
+$('btn-enviar-pedido').addEventListener('click', async () => {
+  if (!usuario || !carrito.length) return;
+  const btn = $('btn-enviar-pedido');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+
+  const nota = $('inp-nota').value.trim();
+
+  // Registrar en GAS si está configurado
+  if (CONFIG.gasURL) {
+    try {
+      await fetch(CONFIG.gasURL + '?action=registrarPedido', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          usuario,
+          carrito,
+          nota,
+          total: totalCarrito(),
+          ts: new Date().toISOString()
+        })
+      });
+    } catch {}
+  }
+
+  // Armar mensaje WhatsApp
+  const lineas = carrito.map(item =>
+    `▸ ${item.cantidad}× ${item.nombre}  ${fmt(item.precio * item.cantidad)}`
+  ).join('\n');
+
+  const msg =
+`🛒 *Nuevo pedido — ${CONFIG.nombre}*
+
+*Cliente:* ${usuario.nombre}
+*WhatsApp:* +549${usuario.wsp}
+*Dirección:* ${usuario.direccion}, ${usuario.barrio}
+${usuario.ref ? `*Ref:* ${usuario.ref}\n` : ''}
+*Productos:*
+${lineas}
+
+*Total: ${fmt(totalCarrito())}*
+${nota ? `\n*Nota:* ${nota}` : ''}
+───────────────
+📱 Pedido enviado desde la app`;
+
+  const url = `https://wa.me/${CONFIG.whatsappNegocio}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+
+  // Limpiar carrito
+  carrito = []; guardarCarrito(); actualizarFAB();
+  closeAllModals();
+  showToast('✅ ¡Pedido enviado! Te contactamos pronto.', 4000);
+
+  btn.disabled = false;
+  btn.textContent = 'Enviar pedido por WhatsApp';
+});
+
+// ── PWA ──────────────────────────────────────────────────
+const DISMISSED_KEY = 'gastro_pwa_dismissed';
+const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (!isStandalone && !localStorage.getItem(DISMISSED_KEY)) {
+    setTimeout(() => $('banner-pwa').classList.remove('hidden'), 3000);
+  }
+});
+
+$('btn-install-pwa').addEventListener('click', () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(c => {
+    if (c.outcome === 'accepted') showToast('✓ App instalada');
+    deferredPrompt = null;
+    $('banner-pwa').classList.add('hidden');
+  });
+});
+$('btn-dismiss-pwa').addEventListener('click', () => {
+  localStorage.setItem(DISMISSED_KEY, '1');
+  $('banner-pwa').classList.add('hidden');
+});
+
+// Safari/iOS — mostrar instrucciones
+if (isIOS && isSafari && !isStandalone && !localStorage.getItem(DISMISSED_KEY)) {
+  setTimeout(() => openModal('modal-pwa'), 4000);
+}
+$('pwa-close').addEventListener('click', () => {
+  localStorage.setItem(DISMISSED_KEY, '1');
+  closeModal('modal-pwa');
+});
+$('pwa-entendido').addEventListener('click', () => {
+  localStorage.setItem(DISMISSED_KEY, '1');
+  closeModal('modal-pwa');
+});
+
+// ── Service Worker ───────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+
+// ── Teclado Escape ───────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    const abiertos = [...document.querySelectorAll('.modal-overlay:not(.hidden)')];
+    if (abiertos.length) closeModal(abiertos[abiertos.length-1].id);
+  }
+});
+
+// ── INIT ─────────────────────────────────────────────────
+async function init() {
+  cargarUsuario();
+  cargarCarrito();
+  actualizarFAB();
+  checkHorario();
+  setInterval(checkHorario, 60000);
+  await cargarProductos();
+  renderCats();
+  renderGrid();
+}
+
+init();
+</script>
+</body>
+</html>
