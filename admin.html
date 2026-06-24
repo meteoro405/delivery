@@ -949,6 +949,16 @@ async function intentarLogin() {
   const token = $('inp-token').value.trim();
   if (!token) return;
 
+  if (token !== ADMIN_CONFIG.adminToken) {
+    $('login-error').style.display = 'block';
+    return;
+  }
+
+  GAS.init(ADMIN_CONFIG.gasURL, token);
+  sessionStorage.setItem('admin_token', token);
+  mostrarApp();
+}
+
   // Si hay GAS configurado, verificar contra él
   if (ADMIN_CONFIG.gasURL && ADMIN_CONFIG.adminToken) {
     setLoading(btn, true);
