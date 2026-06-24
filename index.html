@@ -1010,52 +1010,71 @@ body {
 <div id="modal-pwa" class="modal-overlay hidden" role="dialog" aria-modal="true">
   <div class="modal-sheet">
     <div class="modal-header">
-      <span class="modal-titulo">Instalá la app</span>
+      <span class="modal-titulo">📲 Instalá la app</span>
       <button class="modal-close" id="pwa-close" aria-label="Cerrar">×</button>
     </div>
     <div class="modal-body">
       <div class="pwa-steps">
-        <p style="color:var(--textsub);font-size:13px;margin-bottom:4px;">
-          Para tener acceso rápido a nuestro menú, instalá la app en tu iPhone:
+        <!-- Logo del negocio -->
+        <div style="text-align:center;padding:16px 0 8px">
+          <div style="width:72px;height:72px;border-radius:16px;overflow:hidden;margin:0 auto;border:2px solid var(--border)">
+            <img src="icon-192.png" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='🍽️'">
+          </div>
+          <div style="font-family:Playfair Display,serif;font-size:15px;font-weight:700;margin-top:10px">La Cocina de Leo</div>
+          <div style="font-size:12px;color:var(--textsub);margin-top:3px">Instalá la app para acceso rápido al menú</div>
+        </div>
+
+        <div style="background:var(--surface2);border-radius:12px;padding:16px;margin:8px 0">
+          <div class="pwa-step" style="margin-bottom:14px">
+            <div class="pwa-step-n">1</div>
+            <div class="pwa-step-text">
+              Tocá el botón <strong>Compartir</strong> en la barra inferior de Safari:
+              <div style="margin-top:8px;background:var(--surface);border-radius:8px;padding:10px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border)">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                  <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/>
+                </svg>
+                <span style="font-size:13px;color:var(--accent);font-weight:600">Compartir</span>
+              </div>
+            </div>
+          </div>
+          <div class="pwa-step" style="margin-bottom:14px">
+            <div class="pwa-step-n">2</div>
+            <div class="pwa-step-text">
+              Deslizá el menú hacia arriba y tocá:
+              <div style="margin-top:8px;background:var(--surface);border-radius:8px;padding:10px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                  <rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 10v4M10 12h4"/>
+                </svg>
+                <span style="font-size:13px;color:var(--accent);font-weight:600">Agregar a la pantalla de inicio</span>
+              </div>
+            </div>
+          </div>
+          <div class="pwa-step">
+            <div class="pwa-step-n">3</div>
+            <div class="pwa-step-text">
+              Tocá <strong style="color:var(--accent)">Agregar</strong> arriba a la derecha. ¡La app queda en tu pantalla!
+            </div>
+          </div>
+        </div>
+        <p style="font-size:11px;color:var(--textsub2);text-align:center;margin-top:4px">
+          Funciona sin conexión · Sin ocupar espacio del almacenamiento
         </p>
-        <div class="pwa-step">
-          <div class="pwa-step-n">1</div>
-          <div class="pwa-step-text">
-            Tocá el botón <strong>Compartir</strong>
-            <span class="pwa-icon-inline">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/>
-              </svg>
-            </span>
-            en la barra inferior del navegador.
-          </div>
-        </div>
-        <div class="pwa-step">
-          <div class="pwa-step-n">2</div>
-          <div class="pwa-step-text">
-            Deslizá hacia abajo y elegí <strong>"Agregar a la pantalla de inicio"</strong>.
-          </div>
-        </div>
-        <div class="pwa-step">
-          <div class="pwa-step-n">3</div>
-          <div class="pwa-step-text">
-            Tocá <strong>Agregar</strong> en la esquina superior derecha. ¡Listo!
-          </div>
-        </div>
       </div>
     </div>
     <div class="form-footer">
-      <button class="btn-primary" id="pwa-entendido">Entendido</button>
+      <button class="btn-primary" id="pwa-entendido">¡Entendido, lo instalo!</button>
     </div>
   </div>
 </div>
 
 <!-- ═══ BANNER PWA ANDROID ════════════════════════════════ -->
 <div id="banner-pwa" class="hidden">
-  <div class="pwa-icon-lg">🍽️</div>
+  <div class="pwa-icon-lg">
+    <img src="icon-192.png" style="width:100%;height:100%;object-fit:cover;border-radius:10px" onerror="this.outerHTML='🍽️'">
+  </div>
   <div class="pwa-txt">
     <strong id="banner-pwa-nombre"></strong>
-    <span>Instalá la app para acceso rápido</span>
+    <span>Instalá la app · acceso rápido</span>
   </div>
   <button class="btn-install" id="btn-install-pwa">Instalar</button>
   <button class="btn-dismiss" id="btn-dismiss-pwa" aria-label="Cerrar">×</button>
@@ -1685,9 +1704,9 @@ $('btn-dismiss-pwa').addEventListener('click', () => {
   $('banner-pwa').classList.add('hidden');
 });
 
-// Safari/iOS — mostrar instrucciones
+// Safari/iOS — mostrar instrucciones después de 6 segundos
 if (isIOS && isSafari && !isStandalone && !localStorage.getItem(DISMISSED_KEY)) {
-  setTimeout(() => openModal('modal-pwa'), 4000);
+  setTimeout(() => openModal('modal-pwa'), 6000);
 }
 $('pwa-close').addEventListener('click', () => {
   localStorage.setItem(DISMISSED_KEY, '1');
