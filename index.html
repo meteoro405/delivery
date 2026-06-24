@@ -1774,15 +1774,24 @@ function showBannerDatos() {
   const banner = document.createElement('div');
   banner.id = 'banner-datos';
   banner.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:150;width:calc(100% - 32px);max-width:500px;background:var(--surface);border:1px solid var(--accent);border-radius:14px;padding:14px 16px;display:flex;gap:12px;align-items:center;box-shadow:0 8px 32px rgba(0,0,0,.4);animation:slideUpBanner .3s ease';
-  banner.innerHTML = \`
-    <div style="font-size:28px">👋</div>
-    <div style="flex:1">
-      <div style="font-size:13px;font-weight:700;color:var(--text)">¡Hola! Antes de pedir...</div>
-      <div style="font-size:12px;color:var(--textsub)">Completá tus datos para recibir tu pedido</div>
-    </div>
-    <button onclick="document.getElementById('banner-datos').remove();abrirModalUsuario('registro')" style="background:var(--accent);color:var(--bg);border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Completar</button>
-    <button onclick="document.getElementById('banner-datos').remove()" style="background:none;border:none;color:var(--textsub);cursor:pointer;font-size:20px;padding:4px">×</button>
-  \`;
+  const emoji = document.createElement('div');
+  emoji.style.fontSize = '28px';
+  emoji.textContent = '\uD83D\uDC4B';
+  const texto = document.createElement('div');
+  texto.style.flex = '1';
+  texto.innerHTML = '<div style="font-size:13px;font-weight:700;color:var(--text)">\u00A1Hola! Antes de pedir...</div><div style="font-size:12px;color:var(--textsub)">Complet\u00E1 tus datos para recibir tu pedido</div>';
+  const btnCompletar = document.createElement('button');
+  btnCompletar.textContent = 'Completar';
+  btnCompletar.style.cssText = 'background:var(--accent);color:var(--bg);border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap';
+  btnCompletar.onclick = function() { banner.remove(); abrirModalUsuario('registro'); };
+  const btnCerrar = document.createElement('button');
+  btnCerrar.textContent = '\u00D7';
+  btnCerrar.style.cssText = 'background:none;border:none;color:var(--textsub);cursor:pointer;font-size:20px;padding:4px';
+  btnCerrar.onclick = function() { banner.remove(); };
+  banner.appendChild(emoji);
+  banner.appendChild(texto);
+  banner.appendChild(btnCompletar);
+  banner.appendChild(btnCerrar);
   document.body.appendChild(banner);
 }
 
