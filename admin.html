@@ -915,11 +915,12 @@ const GAS = {
   },
 
   async post(action, body = {}) {
-    const r = await fetch(`${this._url}?action=${action}&token=${this._token}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...body, token: this._token })
+    // GET con params para evitar CORS preflight
+    const params = new URLSearchParams({ action, token: this._token });
+    Object.entries(body).forEach(([k, v]) => {
+      params.append(k, typeof v === 'object' ? JSON.stringify(v) : v);
     });
+    const r = await fetch(`${this._url}?${params}`);
     return r.json();
   },
 
