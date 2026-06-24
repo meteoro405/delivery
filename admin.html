@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -11,8 +11,8 @@
 ═══════════════════════════════════════════════════════ -->
 <script>
 const ADMIN_CONFIG = {
-  gasURL:     'https://script.google.com/macros/s/AKfycbyRWrhQEZ7O_1cS26GvND38AxK5VRUhlAcdfWGmgF7tqWhzSFIw985_ZTZHj069RO_UeA/exec',   // "https://script.google.com/macros/s/XXXX/exec"
-  adminToken: '8af2a84b-e02b-43a6-b035-6e62142d3948',   // mismo token que en Code.gs
+  gasURL:     'https://script.google.com/macros/s/AKfycbyRWrhQEZ7O_1cS26GvND38AxK5VRUhlAcdfWGmgF7tqWhzSFIw985_ZTZHj069RO_UeA/exec',
+  adminToken: '8af2a84b-e02b-43a6-b035-6e62142d3948',
   negocioNombre: 'Mi Restaurante',
 };
 </script>
@@ -944,50 +944,14 @@ let editandoId = null;
 // ── LOGIN ────────────────────────────────────────────
 $('ls-nombre').textContent = ADMIN_CONFIG.negocioNombre;
 
-async function intentarLogin() {
-  const btn = $('btn-login');
+function intentarLogin() {
   const token = $('inp-token').value.trim();
   if (!token) return;
-
   if (token !== ADMIN_CONFIG.adminToken) {
     $('login-error').style.display = 'block';
     return;
   }
-
   GAS.init(ADMIN_CONFIG.gasURL, token);
-  sessionStorage.setItem('admin_token', token);
-  mostrarApp();
-}
-
-  // Si hay GAS configurado, verificar contra él
-  if (ADMIN_CONFIG.gasURL && ADMIN_CONFIG.adminToken) {
-    setLoading(btn, true);
-    try {
-      GAS.init(ADMIN_CONFIG.gasURL, token);
-      const r = await GAS.get('adminLogin');
-      if (!r.ok) {
-        $('login-error').style.display = 'block';
-        setLoading(btn, false, 'Ingresar');
-        return;
-      }
-    } catch {
-      // Sin conexión: verificar token localmente
-      if (token !== ADMIN_CONFIG.adminToken) {
-        $('login-error').style.display = 'block';
-        setLoading(btn, false, 'Ingresar');
-        return;
-      }
-      GAS.init(ADMIN_CONFIG.gasURL, token);
-    }
-  } else {
-    // Sin GAS: verificar token local
-    if (token !== (ADMIN_CONFIG.adminToken || token)) {
-      $('login-error').style.display = 'block';
-      return;
-    }
-    GAS.init(ADMIN_CONFIG.gasURL || '', token);
-  }
-
   sessionStorage.setItem('admin_token', token);
   mostrarApp();
 }
