@@ -9,6 +9,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mi Restaurante">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>Cargando...</title>
 
 <!-- ═══════════════════════════════════════════════════════════
@@ -117,21 +119,21 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  height: 68px;
+  height: 80px;
 }
 #logo-img {
-  width: 56px; height: 56px;
+  width: 72px; height: 72px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid var(--accent);
 }
 #logo-initials {
-  width: 56px; height: 56px;
+  width: 72px; height: 72px;
   border-radius: 50%;
   background: var(--accent);
   color: var(--bg);
   font-family: 'Playfair Display', serif;
-  font-size: 16px; font-weight: 700;
+  font-size: 20px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
@@ -811,10 +813,11 @@ body {
   <div class="header-inner">
     <div id="logo-wrap"></div>
     <span id="nombre-negocio" style="opacity:0;transition:opacity .3s"></span>
-    <button id="btn-cuenta" aria-label="Mi cuenta">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <button id="btn-cuenta" aria-label="Mi cuenta" style="background:none;border:1px solid var(--border);color:var(--textsub);cursor:pointer;padding:6px 12px;border-radius:20px;transition:all .2s;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;font-family:inherit">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
       </svg>
+      <span id="btn-cuenta-label">Mis datos</span>
     </button>
   </div>
 </header>
@@ -1174,10 +1177,21 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
 // ── Persistencia usuario ─────────────────────────────────
 function cargarUsuario() {
   try { usuario = JSON.parse(localStorage.getItem('gastro_usuario')) || null; } catch { usuario = null; }
+  actualizarBtnCuenta();
+}
+function actualizarBtnCuenta() {
+  const label = document.getElementById('btn-cuenta-label');
+  if (!label) return;
+  if (usuario && usuario.nombre) {
+    label.textContent = usuario.nombre.split(' ')[0];
+  } else {
+    label.textContent = 'Mis datos';
+  }
 }
 function guardarUsuario(u) {
   usuario = u;
   localStorage.setItem('gastro_usuario', JSON.stringify(u));
+  actualizarBtnCuenta();
 }
 
 // ── Persistencia carrito ─────────────────────────────────
@@ -1743,10 +1757,33 @@ async function init() {
   actualizarFAB();
   checkHorario();
   setInterval(checkHorario, 60000);
-  await cargarConfigRemota();   // carga config del GAS (nombre, tema, horario, etc.)
+  await cargarConfigRemota();
   await cargarProductos();
   renderCats();
   renderGrid();
+  // Sugerir completar datos si no los tiene
+  if (!usuario) {
+    setTimeout(() => {
+      if (!usuario) showBannerDatos();
+    }, 8000);
+  }
+}
+
+function showBannerDatos() {
+  if (document.getElementById('banner-datos')) return;
+  const banner = document.createElement('div');
+  banner.id = 'banner-datos';
+  banner.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:150;width:calc(100% - 32px);max-width:500px;background:var(--surface);border:1px solid var(--accent);border-radius:14px;padding:14px 16px;display:flex;gap:12px;align-items:center;box-shadow:0 8px 32px rgba(0,0,0,.4);animation:slideUpBanner .3s ease';
+  banner.innerHTML = \`
+    <div style="font-size:28px">👋</div>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:700;color:var(--text)">¡Hola! Antes de pedir...</div>
+      <div style="font-size:12px;color:var(--textsub)">Completá tus datos para recibir tu pedido</div>
+    </div>
+    <button onclick="document.getElementById('banner-datos').remove();abrirModalUsuario('registro')" style="background:var(--accent);color:var(--bg);border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Completar</button>
+    <button onclick="document.getElementById('banner-datos').remove()" style="background:none;border:none;color:var(--textsub);cursor:pointer;font-size:20px;padding:4px">×</button>
+  \`;
+  document.body.appendChild(banner);
 }
 
 init();
