@@ -1645,20 +1645,21 @@ $('btn-enviar-pedido').addEventListener('click', async () => {
 
   const nota = $('inp-nota').value.trim();
 
-  // Registrar en GAS si está configurado
+  // Registrar en GAS via GET para evitar CORS
   if (CONFIG.gasURL) {
     try {
-      await fetch(CONFIG.gasURL + '?action=registrarPedido', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          usuario,
-          carrito,
-          nota,
-          total: totalCarrito(),
-          ts: new Date().toISOString()
-        })
+      const params = new URLSearchParams({
+        action: 'registrarPedido',
+        usuario_nombre:    usuario.nombre,
+        usuario_wsp:       usuario.wsp,
+        usuario_direccion: usuario.direccion,
+        usuario_barrio:    usuario.barrio,
+        usuario_ref:       usuario.ref || '',
+        carrito:           JSON.stringify(carrito),
+        nota:              nota,
+        total:             totalCarrito(),
       });
+      await fetch(CONFIG.gasURL + '?' + params);
     } catch {}
   }
 
