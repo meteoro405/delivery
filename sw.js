@@ -1,4 +1,4 @@
-const CACHE = 'gastro-v1';
+const CACHE = 'gastro-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -21,20 +21,17 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Solo cachear GET; saltar peticiones a GAS (cross-origin)
   if (e.request.method !== 'GET') return;
   if (e.request.url.includes('script.google.com')) return;
+  if (e.request.url.includes('imgur.com')) return;
 
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      const network = fetch(e.request).then(res => {
-        if (res && res.status === 200 && res.type === 'basic') {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
-        }
-        return res;
-      }).catch(() => cached);
-      return cached || network;
-    })
+    fetch(e.request).then(res => {
+      if (res && res.status === 200 && res.type === 'basic') {
+        const clone = res.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
+      }
+      return res;
+    }).catch(() => caches.match(e.request))
   );
 });
