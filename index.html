@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -15,36 +15,54 @@
      CONFIG — editar estos valores para personalizar la app
 ═══════════════════════════════════════════════════════════ -->
 <script>
-const CONFIG = {
-  // Identidad del negocio
-  nombre:        "Mi Restaurante",
-  logo:          "",                        // URL de imagen o "" para usar iniciales
-  tagline:       "Delivery a tu puerta",
-  whatsappNegocio: "5491100000000",         // número completo sin + ni espacios
-
-  // Colores (hex)
-  colorFondo:    "#1A1208",
-  colorSuperficie:"#2A1F0F",
-  colorAccento:  "#D4872A",
-  colorTexto:    "#F5EDD8",
-  colorTextoSub: "#B8A98A",
-
-  // GAS (Google Apps Script) — completar tras publicar el backend
-  gasURL:        "https://script.google.com/macros/s/AKfycbyRWrhQEZ7O_1cS26GvND38AxK5VRUhlAcdfWGmgF7tqWhzSFIw985_ZTZHj069RO_UeA/exec",   // "https://script.google.com/macros/s/XXXX/exec"
-
-  // Horario de atención (para mostrar aviso fuera de horario)
-  horario: {
-    dias: [0,1,2,3,4,5,6],   // 0=Dom...6=Sab, todos activo
-    abre:  "11:00",
-    cierra:"23:00"
-  },
-
-  // Zona de entrega
-  zonaEntrega: "Ciudad de Buenos Aires y GBA",
-
-  // Tiempo estimado de entrega (minutos)
-  tiempoEstimado: "45-60"
+// ═══════════════════════════════════════════════════════
+//  TEMAS DE COLOR
+// ═══════════════════════════════════════════════════════
+const TEMAS = {
+  brasas:     { nombre:"Brasas",     tipo:"oscuro", emoji:"🔥", bg:"#1A1208", surface:"#2A1F0F", surface2:"#352810", accent:"#D4872A", accent2:"#E8A44A", text:"#F5EDD8", textsub:"#B8A98A", textsub2:"#7A6A52", border:"#3A2E1A", themeColor:"#1A1208" },
+  carbon:     { nombre:"Carbón",     tipo:"oscuro", emoji:"⚫", bg:"#0D0D0D", surface:"#1A1A1A", surface2:"#242424", accent:"#E8580A", accent2:"#FF6B1A", text:"#F0F0F0", textsub:"#A0A0A0", textsub2:"#606060", border:"#2E2E2E", themeColor:"#0D0D0D" },
+  medianoche: { nombre:"Medianoche", tipo:"oscuro", emoji:"🌙", bg:"#0A0F1E", surface:"#111827", surface2:"#1C2537", accent:"#4F8EF7", accent2:"#7AAEFF", text:"#E8EDF5", textsub:"#8A9BB5", textsub2:"#4A5A72", border:"#1F2E47", themeColor:"#0A0F1E" },
+  bosque:     { nombre:"Bosque",     tipo:"oscuro", emoji:"🌲", bg:"#0B1A0E", surface:"#122318", surface2:"#1A3022", accent:"#4CAF50", accent2:"#6FCF73", text:"#E8F5E9", textsub:"#88B090", textsub2:"#4A7050", border:"#1E3A25", themeColor:"#0B1A0E" },
+  arena:      { nombre:"Arena",      tipo:"claro",  emoji:"🏜️", bg:"#E9DAB4", surface:"#F2E8CC", surface2:"#FBF5E6", accent:"#2D6A4F", accent2:"#40916C", text:"#1A1208", textsub:"#5A4A30", textsub2:"#8A7A60", border:"#D4C49A", themeColor:"#E9DAB4" },
+  cielo:      { nombre:"Cielo",      tipo:"claro",  emoji:"☁️",  bg:"#F0F4F8", surface:"#FFFFFF", surface2:"#E8EEF4", accent:"#1A73E8", accent2:"#4A90E2", text:"#1A2332", textsub:"#546E8A", textsub2:"#8A9BB5", border:"#D0D8E4", themeColor:"#F0F4F8" },
+  crema:      { nombre:"Crema",      tipo:"claro",  emoji:"🍦", bg:"#FEFDF8", surface:"#FFFFFF", surface2:"#F5F0E8", accent:"#1B4F8A", accent2:"#2E6AAD", text:"#1A1A2E", textsub:"#4A5A72", textsub2:"#8A9AB5", border:"#E0D8C8", themeColor:"#FEFDF8" },
 };
+
+// ═══════════════════════════════════════════════════════
+//  CONFIG BASE — se sobreescribe con datos del GAS
+// ═══════════════════════════════════════════════════════
+const CONFIG = {
+  nombre:          "Mi Restaurante",
+  logo:            "",
+  tagline:         "Delivery a tu puerta",
+  mostrarTagline:  true,
+  mostrarTiempo:   true,
+  mostrarZona:     true,
+  whatsappNegocio: "5491100000000",
+  gasURL:          "https://script.google.com/macros/s/AKfycbyRWrhQEZ7O_1cS26GvND38AxK5VRUhlAcdfWGmgF7tqWhzSFIw985_ZTZHj069RO_UeA/exec",
+  tema:            "brasas",
+  horario: { dias:[0,1,2,3,4,5,6], abre:"11:00", cierra:"23:00" },
+  zonaEntrega:     "Ciudad de Buenos Aires y GBA",
+  tiempoEstimado:  "45-60",
+};
+
+function aplicarTema(nombreTema) {
+  const t = TEMAS[nombreTema] || TEMAS.brasas;
+  const r = document.documentElement.style;
+  r.setProperty('--bg',       t.bg);
+  r.setProperty('--surface',  t.surface);
+  r.setProperty('--surface2', t.surface2);
+  r.setProperty('--accent',   t.accent);
+  r.setProperty('--accent2',  t.accent2);
+  r.setProperty('--text',     t.text);
+  r.setProperty('--textsub',  t.textsub);
+  r.setProperty('--textsub2', t.textsub2);
+  r.setProperty('--border',   t.border || '#3A2E1A');
+  document.querySelector('meta[name="theme-color"]').content = t.themeColor;
+  // ticket siempre claro
+  r.setProperty('--ticket-bg',     t.tipo === 'claro' ? '#FEFDF8' : '#FEFDF8');
+  r.setProperty('--ticket-border', t.tipo === 'claro' ? '#D4CDB5' : '#D4CDB5');
+}
 </script>
 
 <style>
@@ -808,13 +826,13 @@ body {
 <div id="hero">
   <div id="hero-tagline"></div>
   <div id="hero-meta">
-    <span class="hero-badge">
+    <span class="hero-badge" id="hero-tiempo-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
       </svg>
       <span id="hero-tiempo"></span>
     </span>
-    <span class="hero-badge">
+    <span class="hero-badge" id="hero-zona-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/>
       </svg>
@@ -1055,10 +1073,26 @@ body {
   document.title = CONFIG.nombre;
   document.querySelector('meta[name="apple-mobile-web-app-title"]').content = CONFIG.nombre;
   document.getElementById('nombre-negocio').textContent = CONFIG.nombre;
-  document.getElementById('hero-tagline').textContent = CONFIG.tagline;
-  document.getElementById('hero-tiempo').textContent = `${CONFIG.tiempoEstimado} min`;
-  document.getElementById('hero-zona').textContent = CONFIG.zonaEntrega;
   document.getElementById('banner-pwa-nombre').textContent = CONFIG.nombre;
+
+  // Tagline y badges hero
+  const tagEl = document.getElementById('hero-tagline');
+  if (CONFIG.mostrarTagline && CONFIG.tagline) {
+    tagEl.textContent = CONFIG.tagline;
+    tagEl.style.display = '';
+  } else { tagEl.style.display = 'none'; }
+
+  const tiempoEl = document.getElementById('hero-tiempo-wrap');
+  if (CONFIG.mostrarTiempo && tiempoEl) {
+    document.getElementById('hero-tiempo').textContent = `${CONFIG.tiempoEstimado} min`;
+    tiempoEl.style.display = '';
+  } else if (tiempoEl) { tiempoEl.style.display = 'none'; }
+
+  const zonaEl = document.getElementById('hero-zona-wrap');
+  if (CONFIG.mostrarZona && zonaEl) {
+    document.getElementById('hero-zona').textContent = CONFIG.zonaEntrega;
+    zonaEl.style.display = '';
+  } else if (zonaEl) { zonaEl.style.display = 'none'; }
 
   // Logo o iniciales
   const wrap = document.getElementById('logo-wrap');
@@ -1069,14 +1103,8 @@ body {
     wrap.innerHTML = `<div id="logo-initials">${ini}</div>`;
   }
 
-  // Colores CSS
-  const r = document.documentElement.style;
-  r.setProperty('--bg', CONFIG.colorFondo);
-  r.setProperty('--surface', CONFIG.colorSuperficie);
-  r.setProperty('--accent', CONFIG.colorAccento);
-  r.setProperty('--text', CONFIG.colorTexto);
-  r.setProperty('--textsub', CONFIG.colorTextoSub);
-  document.querySelector('meta[name="theme-color"]').content = CONFIG.colorFondo;
+  // Aplicar tema
+  aplicarTema(CONFIG.tema || 'brasas');
 })();
 
 // ── Estado global ────────────────────────────────────────
@@ -1213,6 +1241,56 @@ const DATOS_DEMO = [
   { id:'8', nombre:'Agua Mineral', desc:'Agua mineral sin gas 500ml.', precio:500, categoria:'Bebidas', emoji:'💧', activo:true },
   { id:'9', nombre:'Combo Familiar', desc:'2 hamburguesas, 1 pizza mozzarella, papas fritas y 2 gaseosas.', precio:9500, categoria:'Combos', emoji:'🎁', activo:false },
 ];
+
+// ── Cargar config remota desde GAS ──────────────────────
+async function cargarConfigRemota() {
+  if (!CONFIG.gasURL) return;
+  try {
+    const r = await fetch(CONFIG.gasURL + '?action=getConfig');
+    const data = await r.json();
+    if (!data.ok) return;
+    const c = data.config;
+    // Nombre y datos del negocio
+    if (c.negocio_nombre)     CONFIG.nombre         = c.negocio_nombre;
+    if (c.negocio_tagline !== undefined) CONFIG.tagline = c.negocio_tagline;
+    if (c.negocio_wsp)        CONFIG.whatsappNegocio = c.negocio_wsp;
+    if (c.negocio_logo)       CONFIG.logo           = c.negocio_logo;
+    // Visibilidad hero
+    if (c.mostrar_tagline  !== undefined) CONFIG.mostrarTagline = c.mostrar_tagline !== 'false';
+    if (c.mostrar_tiempo   !== undefined) CONFIG.mostrarTiempo  = c.mostrar_tiempo  !== 'false';
+    if (c.mostrar_zona     !== undefined) CONFIG.mostrarZona    = c.mostrar_zona    !== 'false';
+    // Datos de entrega
+    if (c.zona_entrega)    CONFIG.zonaEntrega    = c.zona_entrega;
+    if (c.tiempo_estimado) CONFIG.tiempoEstimado = c.tiempo_estimado;
+    // Horario
+    if (c.horario_abre)   CONFIG.horario.abre   = c.horario_abre;
+    if (c.horario_cierra) CONFIG.horario.cierra = c.horario_cierra;
+    if (c.horario_dias) {
+      try { CONFIG.horario.dias = JSON.parse(c.horario_dias); } catch {}
+    }
+    // Tema
+    if (c.tema) CONFIG.tema = c.tema;
+    // Re-aplicar config visual con datos remotos
+    document.title = CONFIG.nombre;
+    document.querySelector('meta[name="apple-mobile-web-app-title"]').content = CONFIG.nombre;
+    document.getElementById('nombre-negocio').textContent = CONFIG.nombre;
+    document.getElementById('banner-pwa-nombre').textContent = CONFIG.nombre;
+    const tagEl = document.getElementById('hero-tagline');
+    if (CONFIG.mostrarTagline && CONFIG.tagline) { tagEl.textContent = CONFIG.tagline; tagEl.style.display = ''; }
+    else { tagEl.style.display = 'none'; }
+    const tiempoWrap = document.getElementById('hero-tiempo-wrap');
+    if (CONFIG.mostrarTiempo) { document.getElementById('hero-tiempo').textContent = CONFIG.tiempoEstimado + ' min'; tiempoWrap.style.display = ''; }
+    else { tiempoWrap.style.display = 'none'; }
+    const zonaWrap = document.getElementById('hero-zona-wrap');
+    if (CONFIG.mostrarZona) { document.getElementById('hero-zona').textContent = CONFIG.zonaEntrega; zonaWrap.style.display = ''; }
+    else { zonaWrap.style.display = 'none'; }
+    const wrap = document.getElementById('logo-wrap');
+    if (CONFIG.logo) { wrap.innerHTML = `<img id="logo-img" src="${CONFIG.logo}" alt="${CONFIG.nombre}" onerror="this.style.display='none'">`; }
+    else { const ini = CONFIG.nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); wrap.innerHTML = `<div id="logo-initials">${ini}</div>`; }
+    aplicarTema(CONFIG.tema);
+    checkHorario();
+  } catch {}
+}
 
 // ── Cargar productos (GAS o demo) ────────────────────────
 async function cargarProductos() {
@@ -1642,6 +1720,7 @@ async function init() {
   actualizarFAB();
   checkHorario();
   setInterval(checkHorario, 60000);
+  await cargarConfigRemota();   // carga config del GAS (nombre, tema, horario, etc.)
   await cargarProductos();
   renderCats();
   renderGrid();

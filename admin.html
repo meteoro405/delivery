@@ -15,6 +15,15 @@ const ADMIN_CONFIG = {
   adminToken: '8af2a84b-e02b-43a6-b035-6e62142d3948',
   negocioNombre: 'Mi Restaurante',
 };
+const TEMAS = {
+  brasas:     { nombre:"Brasas",     tipo:"oscuro", emoji:"🔥", bg:"#1A1208", surface:"#2A1F0F", surface2:"#352810", accent:"#D4872A", accent2:"#E8A44A", text:"#F5EDD8", textsub:"#B8A98A", textsub2:"#7A6A52", border:"#3A2E1A" },
+  carbon:     { nombre:"Carbón",     tipo:"oscuro", emoji:"⚫", bg:"#0D0D0D", surface:"#1A1A1A", surface2:"#242424", accent:"#E8580A", accent2:"#FF6B1A", text:"#F0F0F0", textsub:"#A0A0A0", textsub2:"#606060", border:"#2E2E2E" },
+  medianoche: { nombre:"Medianoche", tipo:"oscuro", emoji:"🌙", bg:"#0A0F1E", surface:"#111827", surface2:"#1C2537", accent:"#4F8EF7", accent2:"#7AAEFF", text:"#E8EDF5", textsub:"#8A9BB5", textsub2:"#4A5A72", border:"#1F2E47" },
+  bosque:     { nombre:"Bosque",     tipo:"oscuro", emoji:"🌲", bg:"#0B1A0E", surface:"#122318", surface2:"#1A3022", accent:"#4CAF50", accent2:"#6FCF73", text:"#E8F5E9", textsub:"#88B090", textsub2:"#4A7050", border:"#1E3A25" },
+  arena:      { nombre:"Arena",      tipo:"claro",  emoji:"🏜️", bg:"#E9DAB4", surface:"#F2E8CC", surface2:"#FBF5E6", accent:"#2D6A4F", accent2:"#40916C", text:"#1A1208", textsub:"#5A4A30", textsub2:"#8A7A60", border:"#D4C49A" },
+  cielo:      { nombre:"Cielo",      tipo:"claro",  emoji:"☁️",  bg:"#F0F4F8", surface:"#FFFFFF", surface2:"#E8EEF4", accent:"#1A73E8", accent2:"#4A90E2", text:"#1A2332", textsub:"#546E8A", textsub2:"#8A9BB5", border:"#D0D8E4" },
+  crema:      { nombre:"Crema",      tipo:"claro",  emoji:"🍦", bg:"#FEFDF8", surface:"#FFFFFF", surface2:"#F5F0E8", accent:"#1B4F8A", accent2:"#2E6AAD", text:"#1A1A2E", textsub:"#4A5A72", textsub2:"#8A9AB5", border:"#E0D8C8" },
+};
 </script>
 
 <style>
@@ -607,6 +616,96 @@ tr:hover td { background: var(--surface2); }
             Actualizar
           </button>
         </div>
+
+        <!-- Panel identidad del negocio -->
+        <div class="table-wrap" style="padding:18px;margin-bottom:20px">
+          <div style="font-size:13px;font-weight:700;color:var(--textsub);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px">Identidad del negocio</div>
+          <div class="form-grid" style="gap:12px">
+            <div class="field">
+              <label>Nombre del restaurante</label>
+              <input type="text" id="cfg-negocio-nombre" placeholder="Mi Restaurante" maxlength="60">
+            </div>
+            <div class="field">
+              <label>WhatsApp del negocio</label>
+              <input type="text" id="cfg-negocio-wsp" placeholder="5491100000000" maxlength="20">
+              <div class="field-hint">Sin + ni espacios. Ej: 5491134567890</div>
+            </div>
+            <div class="field">
+              <label>Tagline / Slogan</label>
+              <input type="text" id="cfg-negocio-tagline" placeholder="Delivery a tu puerta" maxlength="60">
+            </div>
+            <div class="field">
+              <label>URL del logo</label>
+              <input type="url" id="cfg-negocio-logo" placeholder="https://...">
+              <div class="field-hint">Dejar vacío para usar iniciales</div>
+            </div>
+            <div class="field">
+              <label>Zona de entrega</label>
+              <input type="text" id="cfg-zona" placeholder="Ciudad de Buenos Aires y GBA" maxlength="60">
+            </div>
+            <div class="field">
+              <label>Tiempo estimado (min)</label>
+              <input type="text" id="cfg-tiempo" placeholder="45-60" maxlength="20">
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <label class="toggle"><input type="checkbox" id="cfg-show-tagline" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+              Mostrar tagline
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <label class="toggle"><input type="checkbox" id="cfg-show-tiempo" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+              Mostrar tiempo estimado
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <label class="toggle"><input type="checkbox" id="cfg-show-zona" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+              Mostrar zona de entrega
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:14px">
+            <button class="btn btn-primary" id="btn-save-identidad">Guardar identidad</button>
+          </div>
+        </div>
+
+        <!-- Panel horario -->
+        <div class="table-wrap" style="padding:18px;margin-bottom:20px">
+          <div style="font-size:13px;font-weight:700;color:var(--textsub);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px">Horario de atención</div>
+          <div class="form-grid" style="gap:12px">
+            <div class="field">
+              <label>Abre</label>
+              <input type="time" id="cfg-hora-abre" value="11:00">
+            </div>
+            <div class="field">
+              <label>Cierra</label>
+              <input type="time" id="cfg-hora-cierra" value="23:00">
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <label style="font-size:11px;font-weight:700;color:var(--textsub);letter-spacing:.07em;text-transform:uppercase;display:block;margin-bottom:8px">Días activos</label>
+            <div class="dias-grid" id="horario-dias-grid">
+              <button type="button" class="dia-btn on" data-hdia="0">Dom</button>
+              <button type="button" class="dia-btn on" data-hdia="1">Lun</button>
+              <button type="button" class="dia-btn on" data-hdia="2">Mar</button>
+              <button type="button" class="dia-btn on" data-hdia="3">Mié</button>
+              <button type="button" class="dia-btn on" data-hdia="4">Jue</button>
+              <button type="button" class="dia-btn on" data-hdia="5">Vie</button>
+              <button type="button" class="dia-btn on" data-hdia="6">Sáb</button>
+            </div>
+          </div>
+          <div style="margin-top:14px">
+            <button class="btn btn-primary" id="btn-save-horario">Guardar horario</button>
+          </div>
+        </div>
+
+        <!-- Panel temas -->
+        <div class="table-wrap" style="padding:18px;margin-bottom:20px">
+          <div style="font-size:13px;font-weight:700;color:var(--textsub);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px">Tema de color</div>
+          <div id="temas-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px"></div>
+          <div style="margin-top:14px">
+            <button class="btn btn-primary" id="btn-save-tema">Aplicar tema</button>
+          </div>
+        </div>
+
         <div class="stats-grid" id="dash-stats">
           <div class="stat-card"><div class="stat-label">Pedidos hoy</div><div class="stat-val accent" id="ds-hoy">—</div></div>
           <div class="stat-card"><div class="stat-label">Últ. 7 días</div><div class="stat-val" id="ds-7d">—</div></div>
@@ -972,6 +1071,8 @@ function mostrarApp() {
   $('app').style.display = 'flex';
   $('sb-nombre').textContent = ADMIN_CONFIG.negocioNombre;
   $('dash-fecha').textContent = new Date().toLocaleDateString('es-AR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  renderTemasGrid();
+  cargarIdentidadAdmin();
   cargarDashboard();
   cargarConfig();
 }
@@ -1471,6 +1572,117 @@ function formatearFecha(ts) {
     return new Date(ts).toLocaleString('es-AR', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' });
   } catch { return ts; }
 }
+
+// ── DASHBOARD: Identidad, Horario, Temas ─────────────
+let temaActual = 'brasas';
+
+function renderTemasGrid() {
+  const grid = document.getElementById('temas-grid');
+  if (!grid) return;
+  grid.innerHTML = Object.entries(TEMAS).map(([key, t]) => `
+    <div class="tema-card${key === temaActual ? ' tema-active' : ''}" data-tema="${key}" onclick="seleccionarTema('${key}')"
+      style="background:${t.bg};border:2px solid ${key===temaActual?t.accent:'transparent'};border-radius:10px;padding:12px;cursor:pointer;transition:border .2s">
+      <div style="font-size:22px;margin-bottom:6px">${t.emoji}</div>
+      <div style="font-size:12px;font-weight:700;color:${t.text}">${t.nombre}</div>
+      <div style="display:flex;gap:4px;margin-top:6px">
+        <div style="width:14px;height:14px;border-radius:50%;background:${t.bg};border:1px solid ${t.border}"></div>
+        <div style="width:14px;height:14px;border-radius:50%;background:${t.surface}"></div>
+        <div style="width:14px;height:14px;border-radius:50%;background:${t.accent}"></div>
+        <div style="width:14px;height:14px;border-radius:50%;background:${t.text};border:1px solid ${t.border}"></div>
+      </div>
+      <div style="font-size:10px;color:${t.textsub};margin-top:4px;text-transform:uppercase;letter-spacing:.06em">${t.tipo}</div>
+    </div>
+  `).join('');
+}
+
+window.seleccionarTema = function(key) {
+  temaActual = key;
+  renderTemasGrid();
+};
+
+async function cargarIdentidadAdmin() {
+  if (!ADMIN_CONFIG.gasURL) return;
+  try {
+    const r = await GAS.get('getConfig');
+    if (!r.ok) return;
+    const c = r.config;
+    if (c.negocio_nombre)  document.getElementById('cfg-negocio-nombre').value  = c.negocio_nombre;
+    if (c.negocio_tagline !== undefined) document.getElementById('cfg-negocio-tagline').value = c.negocio_tagline;
+    if (c.negocio_wsp)     document.getElementById('cfg-negocio-wsp').value     = c.negocio_wsp;
+    if (c.negocio_logo)    document.getElementById('cfg-negocio-logo').value    = c.negocio_logo;
+    if (c.zona_entrega)    document.getElementById('cfg-zona').value            = c.zona_entrega;
+    if (c.tiempo_estimado) document.getElementById('cfg-tiempo').value          = c.tiempo_estimado;
+    if (c.mostrar_tagline !== undefined) document.getElementById('cfg-show-tagline').checked = c.mostrar_tagline !== 'false';
+    if (c.mostrar_tiempo  !== undefined) document.getElementById('cfg-show-tiempo').checked  = c.mostrar_tiempo  !== 'false';
+    if (c.mostrar_zona    !== undefined) document.getElementById('cfg-show-zona').checked    = c.mostrar_zona    !== 'false';
+    if (c.horario_abre)   document.getElementById('cfg-hora-abre').value   = c.horario_abre;
+    if (c.horario_cierra) document.getElementById('cfg-hora-cierra').value = c.horario_cierra;
+    if (c.horario_dias) {
+      try {
+        const dias = JSON.parse(c.horario_dias);
+        document.querySelectorAll('.dia-btn[data-hdia]').forEach(btn => {
+          btn.classList.toggle('on', dias.includes(Number(btn.dataset.hdia)));
+        });
+      } catch {}
+    }
+    if (c.tema) { temaActual = c.tema; }
+    renderTemasGrid();
+  } catch {}
+}
+
+// Días horario toggle
+document.querySelectorAll('.dia-btn[data-hdia]').forEach(btn => {
+  btn.addEventListener('click', () => btn.classList.toggle('on'));
+});
+
+document.getElementById('btn-save-identidad').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-save-identidad');
+  setLoading(btn, true);
+  const fields = [
+    ['negocio_nombre',   document.getElementById('cfg-negocio-nombre').value.trim()],
+    ['negocio_tagline',  document.getElementById('cfg-negocio-tagline').value.trim()],
+    ['negocio_wsp',      document.getElementById('cfg-negocio-wsp').value.trim()],
+    ['negocio_logo',     document.getElementById('cfg-negocio-logo').value.trim()],
+    ['zona_entrega',     document.getElementById('cfg-zona').value.trim()],
+    ['tiempo_estimado',  document.getElementById('cfg-tiempo').value.trim()],
+    ['mostrar_tagline',  document.getElementById('cfg-show-tagline').checked ? 'true' : 'false'],
+    ['mostrar_tiempo',   document.getElementById('cfg-show-tiempo').checked  ? 'true' : 'false'],
+    ['mostrar_zona',     document.getElementById('cfg-show-zona').checked    ? 'true' : 'false'],
+  ];
+  try {
+    for (const [clave, valor] of fields) {
+      await GAS.post('saveconfigval', { clave, valor });
+    }
+    // Actualizar nombre en sidebar
+    const nombre = document.getElementById('cfg-negocio-nombre').value.trim();
+    if (nombre) { document.getElementById('sb-nombre').textContent = nombre; document.title = 'Admin — ' + nombre; }
+    showToast('✅ Identidad guardada');
+  } catch { showToast('Error de conexión'); }
+  setLoading(btn, false);
+});
+
+document.getElementById('btn-save-horario').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-save-horario');
+  setLoading(btn, true);
+  const dias = [...document.querySelectorAll('.dia-btn[data-hdia].on')].map(b => Number(b.dataset.hdia));
+  try {
+    await GAS.post('saveconfigval', { clave: 'horario_abre',   valor: document.getElementById('cfg-hora-abre').value });
+    await GAS.post('saveconfigval', { clave: 'horario_cierra', valor: document.getElementById('cfg-hora-cierra').value });
+    await GAS.post('saveconfigval', { clave: 'horario_dias',   valor: JSON.stringify(dias) });
+    showToast('✅ Horario guardado');
+  } catch { showToast('Error de conexión'); }
+  setLoading(btn, false);
+});
+
+document.getElementById('btn-save-tema').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-save-tema');
+  setLoading(btn, true);
+  try {
+    await GAS.post('saveconfigval', { clave: 'tema', valor: temaActual });
+    showToast('✅ Tema guardado — se aplica al recargar la app del cliente');
+  } catch { showToast('Error de conexión'); }
+  setLoading(btn, false);
+});
 </script>
 </body>
 </html>
