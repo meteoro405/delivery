@@ -270,7 +270,7 @@ body {
 .card:active { transform: scale(.97); }
 
 .card-img-wrap {
-  width: 100%; aspect-ratio: 4/3;
+  width: 100%; aspect-ratio: 1/1;
   background: var(--surface2);
   overflow: hidden;
   position: relative;
@@ -796,7 +796,7 @@ body {
 }
 @media (max-width: 340px) {
   #grid { grid-template-columns: 1fr; }
-  .card-img-wrap { aspect-ratio: 16/9; }
+  .card-img-wrap { aspect-ratio: 1/1; }
 }
 
 /* Safe area bottom */
@@ -1257,7 +1257,7 @@ async function cargarConfigRemota() {
     if (c.negocio_logo)       CONFIG.logo           = c.negocio_logo;
     // Visibilidad hero
     if (c.mostrar_tagline  !== undefined) CONFIG.mostrarTagline = c.mostrar_tagline !== 'false';
-    if (c.mostrar_tiempo   !== undefined) CONFIG.mostrarTiempo  = c.mostrar_tiempo  !== 'false';
+    if (c.mostrar_tiempo   !== undefined) CONFIG.mostrarTiempo  = (c.mostrar_tiempo  === 'true' || c.mostrar_tiempo  === true);
     if (c.mostrar_zona     !== undefined) CONFIG.mostrarZona    = c.mostrar_zona    !== 'false';
     // Datos de entrega
     if (c.zona_entrega)    CONFIG.zonaEntrega    = c.zona_entrega;

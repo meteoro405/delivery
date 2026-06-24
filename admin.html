@@ -1576,6 +1576,22 @@ function formatearFecha(ts) {
 // ── DASHBOARD: Identidad, Horario, Temas ─────────────
 let temaActual = 'brasas';
 
+function aplicarTemaAdmin(nombreTema) {
+  const t = TEMAS[nombreTema];
+  if (!t) return;
+  const r = document.documentElement.style;
+  r.setProperty('--bg',       t.bg);
+  r.setProperty('--surface',  t.surface);
+  r.setProperty('--surface2', t.surface2);
+  r.setProperty('--accent',   t.accent);
+  r.setProperty('--accent2',  t.accent2);
+  r.setProperty('--text',     t.text);
+  r.setProperty('--textsub',  t.textsub);
+  r.setProperty('--textsub2', t.textsub2);
+  r.setProperty('--border',   t.border);
+  document.querySelector('meta[name="theme-color"]').content = t.bg;
+}
+
 function renderTemasGrid() {
   const grid = document.getElementById('temas-grid');
   if (!grid) return;
@@ -1597,6 +1613,7 @@ function renderTemasGrid() {
 
 window.seleccionarTema = function(key) {
   temaActual = key;
+  aplicarTemaAdmin(key);
   renderTemasGrid();
 };
 
@@ -1625,7 +1642,7 @@ async function cargarIdentidadAdmin() {
         });
       } catch {}
     }
-    if (c.tema) { temaActual = c.tema; }
+    if (c.tema) { temaActual = c.tema; aplicarTemaAdmin(c.tema); }
     renderTemasGrid();
   } catch {}
 }
@@ -1679,7 +1696,8 @@ document.getElementById('btn-save-tema').addEventListener('click', async () => {
   setLoading(btn, true);
   try {
     await GAS.post('saveconfigval', { clave: 'tema', valor: temaActual });
-    showToast('✅ Tema guardado — se aplica al recargar la app del cliente');
+    aplicarTemaAdmin(temaActual);
+    showToast('✅ Tema aplicado y guardado');
   } catch { showToast('Error de conexión'); }
   setLoading(btn, false);
 });
