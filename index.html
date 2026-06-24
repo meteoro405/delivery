@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mi Restaurante">
 <link rel="manifest" href="manifest.json">
-<title>Mi Restaurante</title>
+<title>Cargando...</title>
 
 <!-- ═══════════════════════════════════════════════════════════
      CONFIG — editar estos valores para personalizar la app
@@ -117,16 +117,16 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  height: 60px;
+  height: 68px;
 }
 #logo-img {
-  width: 40px; height: 40px;
+  width: 56px; height: 56px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid var(--accent);
 }
 #logo-initials {
-  width: 40px; height: 40px;
+  width: 56px; height: 56px;
   border-radius: 50%;
   background: var(--accent);
   color: var(--bg);
@@ -810,7 +810,7 @@ body {
 <header id="header">
   <div class="header-inner">
     <div id="logo-wrap"></div>
-    <span id="nombre-negocio"></span>
+    <span id="nombre-negocio" style="opacity:0;transition:opacity .3s"></span>
     <button id="btn-cuenta" aria-label="Mi cuenta">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
@@ -1091,7 +1091,9 @@ body {
 (function applyConfig() {
   document.title = CONFIG.nombre;
   document.querySelector('meta[name="apple-mobile-web-app-title"]').content = CONFIG.nombre;
-  document.getElementById('nombre-negocio').textContent = CONFIG.nombre;
+  const nnEl = document.getElementById('nombre-negocio');
+  nnEl.textContent = CONFIG.nombre;
+  nnEl.style.opacity = '1';
   document.getElementById('banner-pwa-nombre').textContent = CONFIG.nombre;
 
   // Tagline y badges hero
@@ -1291,6 +1293,8 @@ async function cargarConfigRemota() {
     if (c.tema) CONFIG.tema = c.tema;
     // Re-aplicar config visual con datos remotos
     document.title = CONFIG.nombre;
+    document.getElementById('nombre-negocio').textContent = CONFIG.nombre;
+    document.getElementById('nombre-negocio').style.opacity = '1';
     document.querySelector('meta[name="apple-mobile-web-app-title"]').content = CONFIG.nombre;
     document.getElementById('nombre-negocio').textContent = CONFIG.nombre;
     document.getElementById('banner-pwa-nombre').textContent = CONFIG.nombre;

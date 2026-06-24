@@ -1235,8 +1235,22 @@ async function cargarProductos() {
   $('tbody-productos').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px"><span class="spinner"></span></td></tr>';
   try {
     const r = await GAS.get('getAdminProductos');
-    if (r.ok) { productos = r.productos; renderTablaProductos(productos); actualizarCatsList(); }
-  } catch { renderTablaProductosDemo(); }
+    if (r.ok && Array.isArray(r.productos)) {
+      productos = r.productos;
+      if (productos.length === 0) {
+        $('tbody-productos').innerHTML = '';
+        $('prod-empty').classList.remove('hidden');
+      } else {
+        $('prod-empty').classList.add('hidden');
+        renderTablaProductos(productos);
+        actualizarCatsList();
+      }
+    } else {
+      renderTablaProductosDemo();
+    }
+  } catch(e) {
+    $('tbody-productos').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--danger)">Error: ' + e.message + '</td></tr>';
+  }
 }
 
 $('prod-search').addEventListener('input', function() {
