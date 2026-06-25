@@ -1,10 +1,5 @@
-const CACHE = 'gastro-v3';
-const ASSETS = [
-  './',
-  './index.html',
-  './admin.html',
-  './manifest.json'
-];
+const CACHE = 'gastro-v4';
+const ASSETS = ['./', './index.html', './admin.html', './manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
@@ -24,12 +19,10 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   if (e.request.url.includes('script.google.com')) return;
   if (e.request.url.includes('imgur.com')) return;
-
   e.respondWith(
     fetch(e.request).then(res => {
       if (res && res.status === 200 && res.type === 'basic') {
-        const clone = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
+        caches.open(CACHE).then(c => c.put(e.request, res.clone()));
       }
       return res;
     }).catch(() => caches.match(e.request))

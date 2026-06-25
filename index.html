@@ -1230,8 +1230,12 @@ function estaDisponible(p) {
 
   // "Solo por hoy" — verificar fecha
   if (p.soloHoy) {
-    const hoy = new Date().toISOString().slice(0,10);
-    if (p.fechaAlta !== hoy) return false;
+    const ahora = new Date();
+    const hoy = ahora.getFullYear() + '-' + 
+      String(ahora.getMonth()+1).padStart(2,'0') + '-' + 
+      String(ahora.getDate()).padStart(2,'0');
+    const fechaAlta = String(p.fechaAlta || '').slice(0,10);
+    if (fechaAlta !== hoy) return false;
   }
 
   // "Pedidos hasta el día X"
