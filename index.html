@@ -1301,8 +1301,13 @@ async function cargarConfigRemota() {
     if (c.horario_abre)   CONFIG.horario.abre   = c.horario_abre;
     if (c.horario_cierra) CONFIG.horario.cierra = c.horario_cierra;
     if (c.horario_dias) {
-      try { CONFIG.horario.dias = JSON.parse(c.horario_dias); } catch {}
+      try { 
+        CONFIG.horario.dias = JSON.parse(c.horario_dias).map(Number);
+      } catch { CONFIG.horario.dias = [0,1,2,3,4,5,6]; }
     }
+    // Asegurarse que abre y cierra son strings limpios
+    if (c.horario_abre)   CONFIG.horario.abre   = String(c.horario_abre).trim().slice(0,5);
+    if (c.horario_cierra) CONFIG.horario.cierra = String(c.horario_cierra).trim().slice(0,5);
     // Tema
     if (c.tema) CONFIG.tema = c.tema;
     // Re-aplicar config visual con datos remotos
