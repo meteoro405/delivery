@@ -1327,7 +1327,7 @@ async function cargarConfigRemota() {
     }
     if (CONFIG.pedidosAbiertos === false) {
       const bannerFuera = document.getElementById('banner-fuera');
-      bannerFuera.textContent = '&#128683; ' + CONFIG.mensajeCerrado;
+      bannerFuera.textContent = String.fromCodePoint(0x1F6AB) + ' ' + CONFIG.mensajeCerrado;
       bannerFuera.classList.remove('hidden');
     }
     // Tema
@@ -1381,7 +1381,7 @@ function mostrarMantenimiento(msg) {
   document.getElementById('cats-wrap').style.display = 'none';
   document.getElementById('productos-section').innerHTML =
     '<div style="text-align:center;padding:60px 20px">' +
-    '<div style="font-size:48px;margin-bottom:16px">&#128683;</div>' +
+    '<div style="font-size:48px;margin-bottom:16px">' + String.fromCodePoint(0x1F6AB) + '</div>' +
     '<div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px">Estamos en mantenimiento</div>' +
     '<div style="font-size:14px;color:var(--textsub)">' + (msg || 'Volvemos pronto.') + '</div>' +
     '</div>';
