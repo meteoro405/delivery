@@ -1293,7 +1293,7 @@ const DATOS_DEMO = [
 async function cargarConfigRemota() {
   if (!CONFIG.gasURL) return;
   try {
-    const r = await fetch(CONFIG.gasURL + '?action=getConfig');
+    const r = await fetch(CONFIG.gasURL + '?action=getConfig', { redirect: 'follow' });
     const data = await r.json();
     if (!data.ok) return;
     const c = data.config;
@@ -1350,7 +1350,7 @@ async function cargarConfigRemota() {
 async function cargarProductos() {
   if (CONFIG.gasURL) {
     try {
-      const r = await fetch(CONFIG.gasURL + '?action=getProductos');
+      const r = await fetch(CONFIG.gasURL + '?action=getProductos', { redirect: 'follow' });
       const data = await r.json();
       if (data.ok) { productos = data.productos; return; }
     } catch {}
@@ -1676,7 +1676,7 @@ $('btn-enviar-pedido').addEventListener('click', async () => {
         nota:              nota,
         total:             totalCarrito(),
       });
-      await fetch(CONFIG.gasURL + '?' + params);
+      await fetch(CONFIG.gasURL + '?' + params, { redirect: 'follow' });
     } catch {}
   }
 

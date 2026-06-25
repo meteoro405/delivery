@@ -1003,7 +1003,7 @@ const GAS = {
 
   async get(action, params = {}) {
     const qs = new URLSearchParams({ action, token: this._token, ...params });
-    const r = await fetch(`${this._url}?${qs}`);
+    const r = await fetch(`${this._url}?${qs}`, { redirect: 'follow' });
     return r.json();
   },
 
@@ -1013,7 +1013,7 @@ const GAS = {
     Object.entries(body).forEach(([k, v]) => {
       params.append(k, typeof v === 'object' ? JSON.stringify(v) : v);
     });
-    const r = await fetch(`${this._url}?${params}`);
+    const r = await fetch(`${this._url}?${params}`, { redirect: 'follow' });
     return r.json();
   },
 
@@ -1570,7 +1570,7 @@ async function cargarConfig() {
 async function guardarConfigVal(clave, valor) {
   try {
     const url = ADMIN_CONFIG.gasURL + '?action=saveconfigval&token=' + ADMIN_CONFIG.adminToken + '&clave=' + encodeURIComponent(clave) + '&valor=' + encodeURIComponent(valor);
-    const r = await fetch(url).then(x => x.json());
+    const r = await fetch(url, { redirect: 'follow' }).then(x => x.json());
     console.log('saveconfigval respuesta:', JSON.stringify(r));
     if (r.ok) showToast('✅ Configuración guardada');
     else showToast('Error: ' + (r.error || 'desconocido'));
