@@ -1002,8 +1002,8 @@ function setLoading(btn, loading, texto) {
 
 // ── GAS API ──────────────────────────────────────────
 const GAS = {
-  _token: '',
-  _url: '',
+  _token: ADMIN_CONFIG.adminToken,
+  _url: ADMIN_CONFIG.gasURL,
 
   init(url, token) { this._url = url; this._token = token; },
 

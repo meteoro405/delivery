@@ -291,13 +291,19 @@ body {
 
 .card-badge {
   position: absolute; top: 8px; left: 8px;
-  background: var(--accent);
-  color: var(--bg);
-  font-size: 10px; font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 10px;
-  letter-spacing: .05em;
+  background: linear-gradient(135deg, #E8580A, #D4872A);
+  color: #fff;
+  font-size: 11px; font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 12px;
+  letter-spacing: .06em;
   text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(232,88,10,.5);
+  animation: pulseBadge 2s ease-in-out infinite;
+}
+@keyframes pulseBadge {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
 .card-body { padding: 10px 12px 12px; }
@@ -1263,7 +1269,7 @@ function estaDisponible(p) {
 }
 
 function badgeAviso(p) {
-  if (p.soloHoy) return '⭐ Solo hoy';
+  if (p.soloHoy) return '🌟 Menú del día';
   if (p.pedidosHasta) return `📅 Hasta ${p.pedidosHasta}`;
   return null;
 }
