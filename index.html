@@ -1416,7 +1416,7 @@ function actualizarEstadoPedidos() {
     }
     // Mostrar banner
     const bannerFuera = document.getElementById('banner-fuera');
-    bannerFuera.textContent = '&#128683; ' + (CONFIG.mensajeCerrado || 'Los pedidos están cerrados.');
+    bannerFuera.textContent = String.fromCodePoint(0x1F6AB) + ' ' + (CONFIG.mensajeCerrado || 'Los pedidos están cerrados.');
     bannerFuera.classList.remove('hidden');
   }
 }
