@@ -1237,14 +1237,9 @@ async function cargarProductos() {
     const r = await GAS.get('getAdminProductos');
     if (r.ok && Array.isArray(r.productos)) {
       productos = r.productos;
-      if (productos.length === 0) {
-        $('tbody-productos').innerHTML = '';
-        $('prod-empty').classList.remove('hidden');
-      } else {
-        $('prod-empty').classList.add('hidden');
-        renderTablaProductos(productos);
-        actualizarCatsList();
-      }
+      $('prod-empty').classList.add('hidden');
+      renderTablaProductos(productos);
+      actualizarCatsList();
     } else {
       renderTablaProductosDemo();
     }
@@ -1284,10 +1279,11 @@ function renderTablaProductos(list) {
       <td style="font-family:var(--mono);color:var(--accent)">${fmt(p.precio)}</td>
       <td style="font-size:12px;color:var(--textsub)">${renderDisponibilidad(p)}</td>
       <td>
-        <label class="toggle toggle-wrap" style="cursor:pointer" title="${p.activo?'Desactivar':'Activar'}">
-          <input type="checkbox" ${p.activo?'checked':''} onchange="toggleProducto('${p.id}',this)">
-          <div class="toggle-track"></div><div class="toggle-thumb"></div>
-        </label>
+        <button onclick="toggleProducto('${p.id}',this)"
+          data-activo="${p.activo}"
+          style="background:${p.activo?'var(--success)':'var(--surface3)'};color:${p.activo?'#fff':'var(--textsub)'};border:none;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;min-width:80px">
+          ${p.activo?'✓ Activo':'Inactivo'}
+        </button>
       </td>
       <td>
         <button class="btn btn-secondary btn-sm" onclick="editarProducto('${p.id}')">Editar</button>
@@ -1317,15 +1313,19 @@ function actualizarCatsList() {
   $('cats-list').innerHTML = cats.map(c => `<option value="${c}">`).join('');
 }
 
-window.toggleProducto = async function(id, checkbox) {
+window.toggleProducto = async function(id, btn) {
   try {
     const r = await GAS.post('toggleProducto', { id });
     if (r.ok) {
       const p = productos.find(x => x.id === id);
       if (p) p.activo = r.activo;
+      btn.dataset.activo = r.activo;
+      btn.textContent = r.activo ? '✓ Activo' : 'Inactivo';
+      btn.style.background = r.activo ? 'var(--success)' : 'var(--surface3)';
+      btn.style.color = r.activo ? '#fff' : 'var(--textsub)';
       showToast(r.activo ? '✅ Producto activado' : '⬛ Producto desactivado');
-    } else { checkbox.checked = !checkbox.checked; }
-  } catch { checkbox.checked = !checkbox.checked; showToast('Error de conexión'); }
+    } else { showToast('Error al cambiar estado'); }
+  } catch { showToast('Error de conexión'); }
 };
 
 window.editarProducto = function(id) {
