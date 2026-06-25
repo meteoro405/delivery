@@ -1113,7 +1113,18 @@ async function cargarDashboard() {
 
   try {
     const r = await GAS.get('getPedidos', { desde: hoy() });
-    if (r.ok) renderPedidosRecientes(r.pedidos.slice(0, 5));
+    if (r.ok) {
+      pedidos = r.pedidos;
+      renderPedidosRecientes(r.pedidos.slice(0, 5));
+      // Actualizar badge con pedidos de hoy
+      const badgePed = $('badge-pedidos');
+      if (r.pedidos.length > 0) {
+        badgePed.textContent = r.pedidos.length;
+        badgePed.classList.remove('hidden');
+      } else {
+        badgePed.classList.add('hidden');
+      }
+    }
   } catch {}
 }
 
@@ -1244,7 +1255,8 @@ async function cargarProductos() {
       renderTablaProductosDemo();
     }
   } catch(e) {
-    $('tbody-productos').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--danger)">Error: ' + e.message + '</td></tr>';
+    console.error('Error cargando productos:', e);
+    $('tbody-productos').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--textsub)">Error de conexión. <button onclick="cargarProductos()" class="btn btn-secondary btn-sm" style="margin-left:8px">Reintentar</button></td></tr>';
   }
 }
 
@@ -1560,7 +1572,7 @@ async function cargarConfig() {
 
 async function guardarConfigVal(clave, valor) {
   try {
-    const r = await GAS.post('saveConfigVal', { clave, valor });
+    const r = await GAS.post('saveconfigval', { clave, valor });
     if (r.ok) showToast('✅ Configuración guardada');
     else showToast('Error guardando');
   } catch { showToast('Error de conexión'); }

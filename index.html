@@ -466,9 +466,11 @@ body {
 
 /* ── MODAL DETALLE PRODUCTO ─────────────────────────────── */
 #modal-producto .prod-img {
-  width: 100%; aspect-ratio: 16/9;
-  object-fit: cover;
+  width: 100%;
+  max-height: 380px;
+  object-fit: contain;
   background: var(--surface2);
+  display: block;
 }
 #modal-producto .prod-img-placeholder {
   width: 100%; aspect-ratio: 16/9;
