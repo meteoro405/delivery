@@ -780,10 +780,7 @@ tr:hover td { background: var(--surface2); }
               <tbody id="tbody-productos"></tbody>
             </table>
           </div>
-          <div class="empty-state hidden" id="prod-empty">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            <p>No hay productos todavía. ¡Agregá el primero!</p>
-          </div>
+
         </div>
       </section>
 
@@ -841,10 +838,7 @@ tr:hover td { background: var(--surface2); }
               <tbody id="tbody-usuarios"></tbody>
             </table>
           </div>
-          <div class="empty-state hidden" id="usu-empty">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-            <p>Aún no hay usuarios registrados.</p>
-          </div>
+
         </div>
       </section>
 
@@ -1251,7 +1245,7 @@ async function cargarProductos() {
     const r = await GAS.get('getAdminProductos');
     if (r.ok && Array.isArray(r.productos)) {
       productos = r.productos;
-      $('prod-empty').classList.add('hidden');
+      
       renderTablaProductos(productos);
       actualizarCatsList();
     } else {
@@ -1272,13 +1266,13 @@ $('prod-search').addEventListener('input', function() {
 
 function renderTablaProductos(list) {
   const tbody = $('tbody-productos');
-  const empty = $('prod-empty');
+  
   if (!list.length) {
     tbody.innerHTML = '';
-    empty.classList.remove('hidden');
+    
     return;
   }
-  empty.classList.add('hidden');
+  
   tbody.innerHTML = list.map(p => `
     <tr>
       <td>
@@ -1535,9 +1529,9 @@ $('usu-search').addEventListener('input', function() {
 });
 
 function renderTablaUsuarios(list) {
-  const empty = $('usu-empty');
-  if (!list.length) { $('tbody-usuarios').innerHTML=''; empty.classList.remove('hidden'); return; }
-  empty.classList.add('hidden');
+  
+  if (!list.length) { $('tbody-usuarios').innerHTML='';  return; }
+  
   $('tbody-usuarios').innerHTML = list.map(u => `
     <tr>
       <td><span style="font-weight:600">${u.nombre||'—'}</span></td>
@@ -1575,10 +1569,15 @@ async function cargarConfig() {
 
 async function guardarConfigVal(clave, valor) {
   try {
-    const r = await GAS.post('saveconfigval', { clave, valor });
+    const url = ADMIN_CONFIG.gasURL + '?action=saveconfigval&token=' + ADMIN_CONFIG.adminToken + '&clave=' + encodeURIComponent(clave) + '&valor=' + encodeURIComponent(valor);
+    const r = await fetch(url).then(x => x.json());
+    console.log('saveconfigval respuesta:', JSON.stringify(r));
     if (r.ok) showToast('✅ Configuración guardada');
-    else showToast('Error guardando');
-  } catch { showToast('Error de conexión'); }
+    else showToast('Error: ' + (r.error || 'desconocido'));
+  } catch(e) { 
+    console.error('Error guardarConfigVal:', e);
+    showToast('Error de conexión'); 
+  }
 }
 
 $('cfg-mantenimiento').addEventListener('change', function() {
