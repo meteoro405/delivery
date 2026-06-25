@@ -1320,10 +1320,15 @@ async function cargarConfigRemota() {
     // Asegurarse que abre y cierra son strings limpios
     if (c.horario_abre)   CONFIG.horario.abre   = String(c.horario_abre).trim().slice(0,5);
     if (c.horario_cierra) CONFIG.horario.cierra = String(c.horario_cierra).trim().slice(0,5);
-    // Pedidos abiertos — guardar en CONFIG para el checkout
+    // Pedidos abiertos — guardar en CONFIG y mostrar banner si cerrado
     if (c.pedidos_abiertos !== undefined) {
       CONFIG.pedidosAbiertos = (c.pedidos_abiertos === 'true' || c.pedidos_abiertos === true);
       CONFIG.mensajeCerrado  = c.mensaje_cerrado || 'Los pedidos están cerrados por el momento.';
+    }
+    if (CONFIG.pedidosAbiertos === false) {
+      const bannerFuera = document.getElementById('banner-fuera');
+      bannerFuera.textContent = '&#128683; ' + CONFIG.mensajeCerrado;
+      bannerFuera.classList.remove('hidden');
     }
     // Tema
     if (c.tema) CONFIG.tema = c.tema;
@@ -1398,6 +1403,22 @@ function renderCats() {
       renderGrid();
     });
   });
+}
+
+// ── Actualizar UI según estado pedidos ───────────────────
+function actualizarEstadoPedidos() {
+  if (CONFIG.pedidosAbiertos === false) {
+    // Deshabilitar FAB
+    const fab = document.getElementById('fab-carrito');
+    if (fab) {
+      fab.style.opacity = '0.5';
+      fab.style.pointerEvents = 'none';
+    }
+    // Mostrar banner
+    const bannerFuera = document.getElementById('banner-fuera');
+    bannerFuera.textContent = '&#128683; ' + (CONFIG.mensajeCerrado || 'Los pedidos están cerrados.');
+    bannerFuera.classList.remove('hidden');
+  }
 }
 
 // ── Render grid ──────────────────────────────────────────
@@ -1807,6 +1828,7 @@ async function init() {
   await cargarProductos();
   renderCats();
   renderGrid();
+  actualizarEstadoPedidos();
   // Sugerir completar datos si no los tiene
   if (!usuario) {
     setTimeout(() => {
