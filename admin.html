@@ -1009,12 +1009,13 @@ const GAS = {
   },
 
   async post(action, body = {}) {
-    // GET con params para evitar CORS preflight
-    const params = new URLSearchParams({ action, token: this._token });
+    // GET con concatenacion simple para evitar CORS y URLSearchParams issues
+    let url = this._url + '?action=' + action + '&token=' + this._token;
     Object.entries(body).forEach(([k, v]) => {
-      params.append(k, typeof v === 'object' ? JSON.stringify(v) : v);
+      const val = typeof v === 'object' ? JSON.stringify(v) : v;
+      url += '&' + k + '=' + encodeURIComponent(val);
     });
-    const r = await fetch(`${this._url}?${params}`, { redirect: 'follow' });
+    const r = await fetch(url, { redirect: 'follow' });
     return r.json();
   },
 

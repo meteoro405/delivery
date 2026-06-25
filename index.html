@@ -1320,6 +1320,11 @@ async function cargarConfigRemota() {
     // Asegurarse que abre y cierra son strings limpios
     if (c.horario_abre)   CONFIG.horario.abre   = String(c.horario_abre).trim().slice(0,5);
     if (c.horario_cierra) CONFIG.horario.cierra = String(c.horario_cierra).trim().slice(0,5);
+    // Pedidos abiertos — guardar en CONFIG para el checkout
+    if (c.pedidos_abiertos !== undefined) {
+      CONFIG.pedidosAbiertos = (c.pedidos_abiertos === 'true' || c.pedidos_abiertos === true);
+      CONFIG.mensajeCerrado  = c.mensaje_cerrado || 'Los pedidos están cerrados por el momento.';
+    }
     // Tema
     if (c.tema) CONFIG.tema = c.tema;
     // Re-aplicar config visual con datos remotos
@@ -1352,11 +1357,29 @@ async function cargarProductos() {
     try {
       const r = await fetch(CONFIG.gasURL + '?action=getProductos', { redirect: 'follow' });
       const data = await r.json();
-      if (data.ok) { productos = data.productos; return; }
+      if (data.mantenimiento) {
+        // Modo mantenimiento activo — mostrar aviso y NO cargar productos
+        mostrarMantenimiento(data.mensaje);
+        return;
+      }
+      if (data.ok) {
+        productos = data.productos;
+        return;
+      }
     } catch {}
   }
-  // Fallback demo
-  productos = DATOS_DEMO;
+  // Fallback demo — solo si no hay GAS configurado
+  if (!CONFIG.gasURL) productos = DATOS_DEMO;
+}
+
+function mostrarMantenimiento(msg) {
+  document.getElementById('cats-wrap').style.display = 'none';
+  document.getElementById('productos-section').innerHTML =
+    '<div style="text-align:center;padding:60px 20px">' +
+    '<div style="font-size:48px;margin-bottom:16px">&#128683;</div>' +
+    '<div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px">Estamos en mantenimiento</div>' +
+    '<div style="font-size:14px;color:var(--textsub)">' + (msg || 'Volvemos pronto.') + '</div>' +
+    '</div>';
 }
 
 // ── Render categorías ────────────────────────────────────
@@ -1656,6 +1679,11 @@ $('co-close').addEventListener('click', () => closeModal('modal-checkout'));
 
 $('btn-enviar-pedido').addEventListener('click', async () => {
   if (!usuario || !carrito.length) return;
+  // Verificar si pedidos están abiertos
+  if (CONFIG.pedidosAbiertos === false) {
+    showToast(CONFIG.mensajeCerrado || 'Los pedidos están cerrados.');
+    return;
+  }
   const btn = $('btn-enviar-pedido');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>';
