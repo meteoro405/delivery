@@ -1075,6 +1075,9 @@ function mostrarApp() {
   cargarIdentidadAdmin();
   cargarDashboard();
   cargarConfig();
+  // Pre-cargar todas las secciones para que estén listas al navegar
+  cargarProductos();
+  cargarUsuarios();
 }
 
 $('btn-logout').addEventListener('click', () => {
