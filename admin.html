@@ -1,4 +1,4 @@
-﻿admin<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -12,7 +12,7 @@
 <script>
 const ADMIN_CONFIG = {
   gasURL:     'https://script.google.com/macros/s/AKfycbyRWrhQEZ7O_1cS26GvND38AxK5VRUhlAcdfWGmgF7tqWhzSFIw985_ZTZHj069RO_UeA/exec',
-  adminToken: 'LeloLoliJuanse',
+  adminToken: '8af2a84b-e02b-43a6-b035-6e62142d3948',
   negocioNombre: 'Mi Restaurante',
 };
 const TEMAS = {
@@ -1364,8 +1364,8 @@ $('btn-nuevo-producto').addEventListener('click', () => {
   abrirDrawer();
 });
 
-// Días toggle
-document.querySelectorAll('.dia-btn').forEach(btn => {
+// Días toggle (solo productos, con data-dia)
+document.querySelectorAll('.dia-btn[data-dia]').forEach(btn => {
   btn.addEventListener('click', () => btn.classList.toggle('on'));
 });
 
