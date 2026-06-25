@@ -1002,8 +1002,9 @@ const GAS = {
   init(url, token) { this._url = url; this._token = token; },
 
   async get(action, params = {}) {
-    const qs = new URLSearchParams({ action, token: this._token, ...params });
-    const r = await fetch(`${this._url}?${qs}`, { redirect: 'follow' });
+    let url = this._url + '?action=' + action + '&token=' + this._token;
+    Object.entries(params).forEach(([k, v]) => { url += '&' + k + '=' + encodeURIComponent(v); });
+    const r = await fetch(url, { redirect: 'follow' });
     return r.json();
   },
 
