@@ -28,6 +28,7 @@ const TEMAS = {
   arena:      { nombre:"Arena",      tipo:"claro",  emoji:"🏜️", bg:"#E9DAB4", surface:"#F2E8CC", surface2:"#FBF5E6", accent:"#2D6A4F", accent2:"#40916C", text:"#1A1208", textsub:"#5A4A30", textsub2:"#8A7A60", border:"#D4C49A", themeColor:"#E9DAB4" },
   cielo:      { nombre:"Cielo",      tipo:"claro",  emoji:"☁️",  bg:"#F0F4F8", surface:"#FFFFFF", surface2:"#E8EEF4", accent:"#1A73E8", accent2:"#4A90E2", text:"#1A2332", textsub:"#546E8A", textsub2:"#8A9BB5", border:"#D0D8E4", themeColor:"#F0F4F8" },
   crema:      { nombre:"Crema",      tipo:"claro",  emoji:"🍦", bg:"#FEFDF8", surface:"#FFFFFF", surface2:"#F5F0E8", accent:"#1B4F8A", accent2:"#2E6AAD", text:"#1A1A2E", textsub:"#4A5A72", textsub2:"#8A9AB5", border:"#E0D8C8", themeColor:"#FEFDF8" },
+  naranja:    { nombre:"Naranja",    tipo:"oscuro", emoji:"🍊", bg:"#F36A24", surface:"rgba(0,0,0,0.18)", surface2:"rgba(0,0,0,0.28)", accent:"#ffffff", accent2:"rgba(255,255,255,0.85)", text:"#ffffff", textsub:"rgba(255,255,255,0.75)", textsub2:"rgba(255,255,255,0.4)", border:"rgba(255,255,255,0.18)", themeColor:"#F36A24" },
 };
 
 // ═══════════════════════════════════════════════════════
@@ -1330,8 +1331,9 @@ async function cargarConfigRemota() {
       bannerFuera.textContent = String.fromCodePoint(0x1F6AB) + ' ' + CONFIG.mensajeCerrado;
       bannerFuera.classList.remove('hidden');
     }
-    // Tema
-    if (c.tema) CONFIG.tema = c.tema;
+    // Tema — leer tema_cliente si existe, sino tema general
+    if (c.tema_cliente) CONFIG.tema = c.tema_cliente;
+    else if (c.tema) CONFIG.tema = c.tema;
     // Re-aplicar config visual con datos remotos
     document.title = CONFIG.nombre;
     document.getElementById('nombre-negocio').textContent = CONFIG.nombre;

@@ -23,6 +23,7 @@ const TEMAS = {
   arena:      { nombre:"Arena",      tipo:"claro",  emoji:"🏜️", bg:"#E9DAB4", surface:"#F2E8CC", surface2:"#FBF5E6", accent:"#2D6A4F", accent2:"#40916C", text:"#1A1208", textsub:"#5A4A30", textsub2:"#8A7A60", border:"#D4C49A" },
   cielo:      { nombre:"Cielo",      tipo:"claro",  emoji:"☁️",  bg:"#F0F4F8", surface:"#FFFFFF", surface2:"#E8EEF4", accent:"#1A73E8", accent2:"#4A90E2", text:"#1A2332", textsub:"#546E8A", textsub2:"#8A9BB5", border:"#D0D8E4" },
   crema:      { nombre:"Crema",      tipo:"claro",  emoji:"🍦", bg:"#FEFDF8", surface:"#FFFFFF", surface2:"#F5F0E8", accent:"#1B4F8A", accent2:"#2E6AAD", text:"#1A1A2E", textsub:"#4A5A72", textsub2:"#8A9AB5", border:"#E0D8C8" },
+  naranja:    { nombre:"Naranja",    tipo:"oscuro", emoji:"🍊", bg:"#F36A24", surface:"rgba(0,0,0,0.18)", surface2:"rgba(0,0,0,0.28)", accent:"#ffffff", accent2:"rgba(255,255,255,0.85)", text:"#ffffff", textsub:"rgba(255,255,255,0.75)", textsub2:"rgba(255,255,255,0.4)", border:"rgba(255,255,255,0.18)", themeColor:"#F36A24" },
 };
 </script>
 
@@ -701,9 +702,11 @@ tr:hover td { background: var(--surface2); }
         <div class="table-wrap" style="padding:18px;margin-bottom:20px">
           <div style="font-size:13px;font-weight:700;color:var(--textsub);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px">Tema de color</div>
           <div id="temas-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px"></div>
-          <div style="margin-top:14px">
-            <button class="btn btn-primary" id="btn-save-tema">Aplicar tema</button>
+          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary" id="btn-save-tema">Aplicar al panel admin</button>
+            <button class="btn btn-secondary" id="btn-save-tema-cliente">Aplicar a la app del cliente</button>
           </div>
+          <div style="font-size:11px;color:var(--textsub);margin-top:8px">El admin y la app del cliente pueden tener temas distintos.</div>
         </div>
 
         <div class="stats-grid" id="dash-stats">
@@ -1672,7 +1675,8 @@ async function cargarIdentidadAdmin() {
         });
       } catch {}
     }
-    if (c.tema) { temaActual = c.tema; aplicarTemaAdmin(c.tema); }
+    const temaAdminVal = c.tema_admin || c.tema;
+    if (temaAdminVal) { temaActual = temaAdminVal; aplicarTemaAdmin(temaAdminVal); }
     renderTemasGrid();
   } catch {}
 }
@@ -1725,11 +1729,20 @@ document.getElementById('btn-save-tema').addEventListener('click', async () => {
   const btn = document.getElementById('btn-save-tema');
   setLoading(btn, true);
   try {
-    await GAS.post('saveconfigval', { clave: 'tema', valor: temaActual });
+    // Guardar como tema_admin (independiente del tema del cliente)
+    await GAS.post('saveconfigval', { clave: 'tema_admin', valor: temaActual });
     aplicarTemaAdmin(temaActual);
-    showToast('✅ Tema aplicado y guardado');
+    showToast('Tema del admin guardado');
   } catch { showToast('Error de conexión'); }
   setLoading(btn, false);
+});
+
+// Botón para guardar tema del cliente (app del usuario)
+document.getElementById('btn-save-tema-cliente') && document.getElementById('btn-save-tema-cliente').addEventListener('click', async () => {
+  try {
+    await GAS.post('saveconfigval', { clave: 'tema_cliente', valor: temaActual });
+    showToast('Tema del cliente guardado');
+  } catch { showToast('Error de conexión'); }
 });
 </script>
 </body>

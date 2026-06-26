@@ -1,4 +1,4 @@
-const CACHE = 'gastro-v16';
+const CACHE = 'gastro-v17';
 const ASSETS = ['./', './index.html', './admin.html', './manifest.json'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
